@@ -3,23 +3,33 @@ package model;
 import java.util.ArrayList;
 
 public class Epic extends Task{
-    ArrayList<Integer> subTasksIdList = new ArrayList<>();
+    private ArrayList<Integer> subtasksIdList = new ArrayList<>();
 
-    public ArrayList<Integer> getSubTasksIdList() {
-        return subTasksIdList;
+    public ArrayList<Integer> getSubtasksIdList() {
+        return subtasksIdList;
     }
 
     public void addSubtaskId(Integer subTasksId) {
-        if (!subTasksIdList.contains(subTasksId)){
-            this.subTasksIdList.add(subTasksId);
+        if (!subtasksIdList.contains(subTasksId)){
+            this.subtasksIdList.add(subTasksId);
         }
+    }
+
+    public void removeSubtaskId(Integer subTasksId) {
+        if (subtasksIdList.contains(subTasksId)){
+            this.subtasksIdList.remove(subTasksId);
+        }
+    }
+
+    public void clearSubtaskIdList() {
+        subtasksIdList.clear();
     }
 
 
     @Override
     public String toString() {
         return "Epic{" +
-                "subTasksIdList=" + subTasksIdList +
+                "subtasksIdList=" + subtasksIdList +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + id +
