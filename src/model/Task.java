@@ -3,15 +3,19 @@ package model;
 import java.util.Objects;
 
 public class Task {
-    protected String name;
-    protected String description;
-    protected Integer id;
-    protected String status;
+    private String name;
+    private String description;
+    private Integer id;
+    private Status status;
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Task task = (Task) o;
         return id == task.id;
     }
@@ -43,7 +47,7 @@ public class Task {
         return id;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
@@ -59,7 +63,7 @@ public class Task {
         this.id = id;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 

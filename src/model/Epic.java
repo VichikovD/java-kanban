@@ -1,22 +1,28 @@
 package model;
 
+import java.util.List;
 import java.util.ArrayList;
 
-public class Epic extends Task{
-    private ArrayList<Integer> subtasksIdList = new ArrayList<>();
+public class Epic extends Task {
+    private List<Integer> subtasksIdList = new ArrayList<>();
 
-    public ArrayList<Integer> getSubtasksIdList() {
+    public Epic() {
+        super();
+        setStatus(Status.NEW);
+    }
+
+    public List<Integer> getSubtasksIdList() {
         return subtasksIdList;
     }
 
     public void addSubtaskId(Integer subTasksId) {
-        if (!subtasksIdList.contains(subTasksId)){
+        if (!subtasksIdList.contains(subTasksId)) {
             this.subtasksIdList.add(subTasksId);
         }
     }
 
     public void removeSubtaskId(Integer subTasksId) {
-        if (subtasksIdList.contains(subTasksId)){
+        if (subtasksIdList.contains(subTasksId)) {
             this.subtasksIdList.remove(subTasksId);
         }
     }
@@ -25,15 +31,14 @@ public class Epic extends Task{
         subtasksIdList.clear();
     }
 
-
     @Override
     public String toString() {
         return "Epic{" +
                 "subtasksIdList=" + subtasksIdList +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", id=" + id +
-                ", status='" + status + '\'' +
+                ", name='" + getName() + '\'' +
+                ", description='" + getDescription() + '\'' +
+                ", id=" + getId() +
+                ", status='" + getStatus() + '\'' +
                 '}';
     }
 }
