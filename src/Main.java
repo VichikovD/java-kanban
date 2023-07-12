@@ -44,6 +44,13 @@ public class Main {
         subTask2.setEpicId(3);
         manager.createSubtask(subTask2);
 
+        Subtask subTask3 = new Subtask();
+        subTask3.setDescription("Description S3");
+        subTask3.setName("S3");
+        subTask3.setStatus(Status.IN_PROGRESS);
+        subTask3.setEpicId(3);
+        manager.createSubtask(subTask3);
+
         Epic epic2 = new Epic();
         epic2.setDescription("Description E2");
         epic2.setName("E2");
@@ -52,48 +59,30 @@ public class Main {
         System.out.println(manager.getAllTasks());
         System.out.println(manager.getAllSubtasks());
         System.out.println(manager.getAllEpics());
-        System.out.println("");
+        System.out.println();
 
-        task1.setStatus(Status.DONE);
-        task1.setDescription("New discription T1");
-        subTask2.setStatus(Status.IN_PROGRESS);
-        subTask2.setEpicId(epic2.getId());
-        epic1.setDescription("New description E1");
-        epic1.setStatus(Status.NEW);
-        epic1.clearSubtaskIdList();
-
-        manager.updateTask(task1);
-        manager.updateSubtask(subTask2);
-        manager.updateEpic(epic1);
-
-        System.out.println(manager.getAllTasks());
-        System.out.println(manager.getAllSubtasks());
-        System.out.println(manager.getAllEpics());
-        System.out.println("");
-
-        System.out.println(manager.getAllTasks());
-        System.out.println(manager.getAllSubtasks());
-        System.out.println(manager.getAllEpics());
         manager.getEpicById(3);
-        manager.getEpicById(6);
+        manager.getEpicById(7);
         manager.getTaskById(1);
-        manager.getSubtaskById(4);
+        manager.getSubtaskById(5);
         manager.getEpicById(3);
-        manager.getEpicById(6);
-        manager.getTaskById(1);
+        manager.getEpicById(7);
+        manager.getTaskById(2);
         manager.getSubtaskById(4);
-        manager.getEpicById(3);
-        manager.getEpicById(6);
-        manager.getTaskById(1);
-        manager.getSubtaskById(4);
+        manager.getSubtaskById(6);
+        manager.getSubtaskById(5);
+
 
         System.out.println(manager.getHistory());
         System.out.println("");
 
-        manager.deleteAllEpics();
+
+        manager.deleteAllSubtasks();
         System.out.println(manager.getAllTasks());
         System.out.println(manager.getAllSubtasks());
         System.out.println(manager.getAllEpics());
+        System.out.println("");
+        
         System.out.println(manager.getHistory());
 
     }
