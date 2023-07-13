@@ -9,8 +9,6 @@ public interface TaskManager {
 
     public List<Task> getHistory();
 
-    public int getNewId();
-
     public void createTask(Task task);
 
     public void updateTask(Task task);
@@ -22,8 +20,6 @@ public interface TaskManager {
     public void createEpic(Epic thatEpic);
 
     public void updateEpic(Epic thatEpic);
-
-    public void checkAndCorrectEpicStatus(int epicId);
 
     public List<Subtask> getSubtasksListByEpicId(int epicId);
 

@@ -23,32 +23,41 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
-    @Override
+
+
     public int getNewId() {
         return taskCounter++;
     }
 
     @Override
-    public void createTask(Task task) {
-        task.setId(getNewId());
-        tasksMap.put(task.getId(), task);
+    public void createTask(Task thatTask) {
+        thatTask.setId(getNewId());
+        Task thisTask = new Task();
+        thisTask.setDescription(thatTask.getDescription());
+        thisTask.setStatus(thatTask.getStatus());
+        thisTask.setId(thatTask.getId());
+        thisTask.setName(thatTask.getName());
+        tasksMap.put(thisTask.getId(), thisTask);
     }
 
     @Override
-    public void updateTask(Task task) {
-        if (!tasksMap.containsKey(task.getId())) {
+    public void updateTask(Task thatTask) {
+        Task thisTask = tasksMap.get(thatTask.getId());
+        if (thisTask == null) {
             System.out.println("Error in updateTask - given task id is not in tasksMap keys");
             return;
         }
-        tasksMap.put(task.getId(), task); // ���� � ���� ��� ����� id task, �� ��� �������� �� ��� ������� � ������
-        // �������� � ���� �� ����� �����, ������ ������ Update ������������ �� �
-        // Create.
+        thisTask.setName(thatTask.getName());
+        thisTask.setDescription(thatTask.getDescription());
+        thisTask.setStatus(thatTask.getStatus());
+        tasksMap.put(thisTask.getId(), thisTask);
     }
 
     @Override
     public void createSubtask(Subtask thatSubtask) {
         thatSubtask.setId(getNewId());
-        if (!epicsMap.containsKey(thatSubtask.getEpicId())) {
+        Epic epicOfThatSubtask = epicsMap.get(thatSubtask.getEpicId());
+        if (epicOfThatSubtask == null) {
             System.out.println("Error in createSubtask - Epic is not found by Epic ID. Subtask did't created.");
             return;
         }
@@ -61,29 +70,28 @@ public class InMemoryTaskManager implements TaskManager {
         thisSubtask.setStatus(thatSubtask.getStatus());
         subtasksMap.put(thisSubtask.getId(), thisSubtask);
 
-        Epic epicOfThisSubtask = epicsMap.get(thisSubtask.getEpicId());
-        epicOfThisSubtask.addSubtaskId(thisSubtask.getId());
-        checkAndCorrectEpicStatus(epicOfThisSubtask.getId());
+        epicOfThatSubtask.addSubtaskId(thisSubtask.getId());
+        updateEpicStatus(thisSubtask.getEpicId());
     }
 
     @Override
     public void updateSubtask(Subtask thatSubtask) {
-        if (!subtasksMap.containsKey(thatSubtask.getId())) {
+        Subtask thisSubtask = subtasksMap.get(thatSubtask.getId());
+        if (thisSubtask == null) {
             System.out.println("Error in updateSubtask - subtask is not found by subtask ID. Subtask didn't updated.");
             return;
         }
 
-        if (!epicsMap.containsKey(thatSubtask.getEpicId())) {
+        Epic epicOfThatSubTask = epicsMap.get(thatSubtask.getEpicId());
+        if (epicOfThatSubTask == null) {
             System.out.println("Error in updateSubtask - Epic is not found by Subtask's Epic ID. Subtask did't updated.");
             return;
         }
 
-        Subtask thisSubtask = subtasksMap.get(thatSubtask.getId());
         Epic epicOfThisSubtask = epicsMap.get(thisSubtask.getEpicId());
-        Epic epicOfThatSubTask = epicsMap.get(thatSubtask.getEpicId());
         if (epicOfThisSubtask != epicOfThatSubTask) {
             epicOfThisSubtask.removeSubtaskId(thisSubtask.getId());
-            checkAndCorrectEpicStatus(epicOfThisSubtask.getId());
+            updateEpicStatus(epicOfThisSubtask.getId());
         }
 
         thisSubtask.setName(thatSubtask.getName());
@@ -93,7 +101,7 @@ public class InMemoryTaskManager implements TaskManager {
         subtasksMap.put(thisSubtask.getId(), thisSubtask);
 
         epicOfThatSubTask.addSubtaskId(thisSubtask.getId());
-        checkAndCorrectEpicStatus(epicOfThatSubTask.getId());
+        updateEpicStatus(epicOfThatSubTask.getId());
     }
 
     @Override
@@ -115,14 +123,13 @@ public class InMemoryTaskManager implements TaskManager {
         thisEpic.setName(thatEpic.getName());
         thisEpic.setDescription(thatEpic.getDescription());
         epicsMap.put(thisEpic.getId(), thisEpic);
-        checkAndCorrectEpicStatus(thisEpic.getId());
+        updateEpicStatus(thisEpic.getId());
     }
 
-    @Override
-    public void checkAndCorrectEpicStatus(int epicId) {
+    private void updateEpicStatus(int epicId) {
         Epic thisEpic = epicsMap.get(epicId);
         if (thisEpic == null) {
-            System.out.println("Error in checkAndCorrectEpicStatus - epic ID is not found");
+            System.out.println("Error in updateEpicStatus - epic ID is not found");
             return;
         }
         ArrayList<Integer> subtasksIdList = new ArrayList<>(thisEpic.getSubtasksIdList());
@@ -219,39 +226,41 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteTaskById(int taskId) {
-        tasksMap.remove(taskId);
+        if (tasksMap.remove(taskId) == null) {
+            System.out.println("Can't delete. No matches with id: " + taskId);
+            return;
+        }
         historyManager.remove(taskId);
     }
 
     @Override
     public void deleteSubtaskById(int subtaskId) {
-        if (!subtasksMap.containsKey(subtaskId)) {
+        Subtask subtask = subtasksMap.remove(subtaskId);
+        if (subtask == null) {
             System.out.println("Can't delete. No matches with id: " + subtaskId);
             return;
         }
 
-        Subtask subtask = subtasksMap.get(subtaskId);
         int epicIdOfSubtask = subtask.getEpicId();
         Epic epic = epicsMap.get(epicIdOfSubtask);
         epic.removeSubtaskId(subtaskId);
-        subtasksMap.remove(subtaskId);
-        checkAndCorrectEpicStatus(epic.getId());
+        updateEpicStatus(epic.getId());
         historyManager.remove(subtaskId);
 
     }
 
     @Override
     public void deleteEpicById(int epicId) {
-        if (!epicsMap.containsKey(epicId)) {
+        Epic epic = epicsMap.remove(epicId);
+        if (epic == null) {
             System.out.println("Can't delete. No matches with id: " + epicId);
             return;
         }
-        Epic epic = epicsMap.get(epicId);
         List<Integer> subtasksIdList = epic.getSubtasksIdList();
         for (Integer subTaskId : subtasksIdList) {
+            historyManager.remove(subTaskId);
             subtasksMap.remove(subTaskId);
         }
-        epicsMap.remove(epicId);
 
         historyManager.remove(epicId);
 
