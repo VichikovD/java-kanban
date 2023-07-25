@@ -10,6 +10,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     HashMap<Integer, Node<Task>> nodeMap = new HashMap<>();
     Node<Task> first;
     Node<Task> last;
+    private int size = 0;
 
     private void linkLast(Task task) {
         Node<Task> oldLast = last;
@@ -20,9 +21,10 @@ public class InMemoryHistoryManager implements HistoryManager {
         } else {
             oldLast.next = newNode;
         }
+        size += 1;
     }
 
-    private void removeNode(int nodeId){
+    private void removeNode(int nodeId) {
         Node<Task> node = nodeMap.remove(nodeId);
         if (node == null) {
             return;
@@ -45,16 +47,18 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
 
         node.data = null;
+        size -= 1;
     }
 
     public List<Task> getTasks() {
         return getHistory();
     }
+
     @Override
     public List<Task> getHistory() {
-        Node<Task> node = first;
         List<Task> tasksList = new ArrayList<>();
-        while (node != null){
+        Node<Task> node = first;
+        while (node != null) {
             tasksList.add(node.data);
             node = node.next;
         }
@@ -85,4 +89,35 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
     }
 
+    static String historyToString(HistoryManager manager) {
+        List<Task> historyList =  manager.getHistory();
+        StringBuilder tasksIdLine = new StringBuilder();
+        int counter = 0;
+        for (Task task : historyList) {
+            tasksIdLine.append(task.getId());
+            counter += 1;
+            if (historyList.size() != counter) {
+                tasksIdLine.append(",");
+            }
+        }
+        return tasksIdLine.toString();
+    }
+
+    /*static void stringToHistory(String value) {
+        String[] idList
+    }*/
+
+    /*public String toString() {
+        List<Task> historyList =  manager.getHistory();
+        StringBuilder tasksIdLine = new StringBuilder();
+        int counter = 0;
+        for (Task task : historyList) {
+            tasksIdLine.append(task.getId());
+            counter += 1;
+            if (historyList.size() != counter) {
+                tasksIdLine.append(",");
+            }
+        }
+        return tasksIdLine.toString();
+    }*/
 }

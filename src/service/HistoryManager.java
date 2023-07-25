@@ -12,4 +12,6 @@ public interface HistoryManager {
 
     public void remove(int id);
 
+
+
 }

@@ -1,22 +1,24 @@
 package util;
 
-import service.TaskManager;
-import service.InMemoryTaskManager;
-import service.HistoryManager;
-import service.InMemoryHistoryManager;
+import service.*;
 
 public class Managers {
     private Managers() {
     }
 
-    public static TaskManager getDefault() {
-        TaskManager taskManager = new InMemoryTaskManager();
+    public static InMemoryTaskManager getInMemoryTaskManager() {
+        InMemoryTaskManager taskManager = new InMemoryTaskManager();
         return taskManager;
     }
 
     public static HistoryManager getDefaultHistory() {
         HistoryManager historyManager = new InMemoryHistoryManager();
         return historyManager;
+    }
+
+    public static FileBackedTasksManager getFileBackedTaskManager() {
+        FileBackedTasksManager taskManager = new FileBackedTasksManager("AutoSave.txt");
+        return taskManager;
     }
 
 }

@@ -9,6 +9,7 @@ public class Epic extends Task {
     public Epic() {
         super();
         setStatus(Status.NEW);
+        tasksType = TasksType.EPIC;
     }
 
     public List<Integer> getSubtasksIdList() {
@@ -41,4 +42,17 @@ public class Epic extends Task {
                 ", status='" + getStatus() + '\'' +
                 '}';
     }
+
+    public static Epic epicFromStringArray(String[] data) {
+        Epic epic = new Epic();
+
+        epic.setId(Integer.parseInt(data[0]));
+        epic.setName(data[2]);
+        epic.setStatus(Status.getStatusByString(data[3]));
+        epic.setDescription(data[4]);
+
+        return epic;
+    }
+
+
 }

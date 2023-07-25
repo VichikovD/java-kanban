@@ -1,7 +1,7 @@
+/*
 import model.Epic;
 import model.Subtask;
 import model.Task;
-import service.InMemoryTaskManager;
 import service.TaskManager;
 import model.Status;
 import util.Managers;
@@ -9,7 +9,8 @@ import util.Managers;
 public class Main {
     public static void main(String[] args) {
 
-        TaskManager manager = Managers.getDefault();
+        TaskManager manager = Managers.getInMemoryTaskManager();
+
 
         Task task1 = new Task();
         task1.setDescription("Description T1");
@@ -86,4 +87,4 @@ public class Main {
         System.out.println(manager.getHistory());
 
     }
-}
+}*/

@@ -12,17 +12,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int taskCounter = 1;
-    private HashMap<Integer, Task> tasksMap = new HashMap<>();
-    private HashMap<Integer, Subtask> subtasksMap = new HashMap<>();
-    private HashMap<Integer, Epic> epicsMap = new HashMap<>();
+    private int taskCounter;
+    protected final HashMap<Integer, Task> tasksMap;
+    protected final HashMap<Integer, Subtask> subtasksMap;
+    protected final HashMap<Integer, Epic> epicsMap;
 
     HistoryManager historyManager = Managers.getDefaultHistory();
+
+    public InMemoryTaskManager() {
+        this.taskCounter = 1;
+        this.tasksMap = new HashMap<>();
+        this.subtasksMap = new HashMap<>();
+        this.epicsMap = new HashMap<>();
+    }
 
     public List<Task> getHistory() {
         return historyManager.getHistory();
     }
-
 
 
     public int getNewId() {
@@ -126,7 +132,7 @@ public class InMemoryTaskManager implements TaskManager {
         updateEpicStatus(thisEpic.getId());
     }
 
-    private void updateEpicStatus(int epicId) {
+    protected void updateEpicStatus(int epicId) {
         Epic thisEpic = epicsMap.get(epicId);
         if (thisEpic == null) {
             System.out.println("Error in updateEpicStatus - epic ID is not found");

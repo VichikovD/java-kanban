@@ -7,33 +7,7 @@ public class Task {
     private String description;
     private Integer id;
     private Status status;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Task task = (Task) o;
-        return id == task.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Task{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", id=" + id +
-                ", status='" + status + '\'' +
-                '}';
-    }
+    TasksType tasksType;
 
     public String getName() {
         return name;
@@ -68,5 +42,48 @@ public class Task {
     }
 
     public Task() {
+        tasksType = TasksType.TASK;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Task task = (Task) o;
+        return id == task.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", id=" + id +
+                ", status='" + status + '\'' +
+                '}';
+    }
+
+    public String toString(Task task) {
+        return String.format("%s,%s,%s,%s,%s", id, tasksType.toString(), name, status, description);
+    }
+
+    public static Task taskFromStringArray(String[] data) {
+        Task task = new Task();
+
+        task.setId(Integer.parseInt(data[0]));
+        task.setName(data[2]);
+        task.setStatus(Status.getStatusByString(data[3]));
+        task.setDescription(data[4]);
+
+        return task;
     }
 }
