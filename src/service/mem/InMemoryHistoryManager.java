@@ -1,10 +1,11 @@
-package service;
+package service.mem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import model.Task;
+import service.HistoryManager;
 
 public class InMemoryHistoryManager implements HistoryManager {
     HashMap<Integer, Node<Task>> nodeMap = new HashMap<>();
@@ -89,7 +90,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
     }
 
-    static String historyToString(HistoryManager manager) {
+    public static String historyToString(HistoryManager manager) {
         List<Task> historyList =  manager.getHistory();
         StringBuilder tasksIdLine = new StringBuilder();
         int counter = 0;

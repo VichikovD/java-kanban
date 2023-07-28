@@ -48,7 +48,7 @@ public class Epic extends Task {
 
         epic.setId(Integer.parseInt(data[0]));
         epic.setName(data[2]);
-        epic.setStatus(Status.getStatusByString(data[3]));
+        epic.setStatus(Status.valueOf(data[3]));
         epic.setDescription(data[4]);
 
         return epic;

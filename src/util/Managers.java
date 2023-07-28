@@ -1,6 +1,9 @@
 package util;
 
 import service.*;
+import service.file.FileBackedTasksManager;
+import service.mem.InMemoryHistoryManager;
+import service.mem.InMemoryTaskManager;
 
 public class Managers {
     private Managers() {
@@ -16,8 +19,8 @@ public class Managers {
         return historyManager;
     }
 
-    public static FileBackedTasksManager getFileBackedTaskManager() {
-        FileBackedTasksManager taskManager = new FileBackedTasksManager("AutoSave.txt");
+    public static TaskManager getDefaults() {
+        TaskManager taskManager = FileBackedTasksManager.loadFromFile("AutoSave.csv");
         return taskManager;
     }
 

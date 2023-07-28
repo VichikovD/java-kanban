@@ -7,6 +7,7 @@ public class Task {
     private String description;
     private Integer id;
     private Status status;
+    protected int epicId;
     TasksType tasksType;
 
     public String getName() {
@@ -23,6 +24,9 @@ public class Task {
 
     public Status getStatus() {
         return status;
+    }
+    public TasksType getTasksType() {
+        return tasksType;
     }
 
     public void setName(String name) {
@@ -72,18 +76,10 @@ public class Task {
                 '}';
     }
 
-    public String toString(Task task) {
-        return String.format("%s,%s,%s,%s,%s", id, tasksType.toString(), name, status, description);
+    public int getEpicId() {
+        return epicId;
     }
-
-    public static Task taskFromStringArray(String[] data) {
-        Task task = new Task();
-
-        task.setId(Integer.parseInt(data[0]));
-        task.setName(data[2]);
-        task.setStatus(Status.getStatusByString(data[3]));
-        task.setDescription(data[4]);
-
-        return task;
+    public void setEpicId(int epicId) {
+        this.epicId = -1;
     }
 }

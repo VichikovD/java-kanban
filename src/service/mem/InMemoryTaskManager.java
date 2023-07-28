@@ -1,5 +1,7 @@
-package service;
+package service.mem;
 
+import service.HistoryManager;
+import service.TaskManager;
 import util.Managers;
 
 import model.Epic;
@@ -17,7 +19,7 @@ public class InMemoryTaskManager implements TaskManager {
     protected final HashMap<Integer, Subtask> subtasksMap;
     protected final HashMap<Integer, Epic> epicsMap;
 
-    HistoryManager historyManager = Managers.getDefaultHistory();
+    protected HistoryManager historyManager = Managers.getDefaultHistory();
 
     public InMemoryTaskManager() {
         this.taskCounter = 1;
@@ -33,6 +35,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     public int getNewId() {
         return taskCounter++;
+    }
+    protected void setTaskCounter(int num) {
+        this.taskCounter = num + 1;
     }
 
     @Override
