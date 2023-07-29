@@ -36,6 +36,7 @@ public class InMemoryTaskManager implements TaskManager {
     public int getNewId() {
         return taskCounter++;
     }
+
     protected void setTaskCounter(int num) {
         this.taskCounter = num + 1;
     }
@@ -144,16 +145,13 @@ public class InMemoryTaskManager implements TaskManager {
             return;
         }
         ArrayList<Integer> subtasksIdList = new ArrayList<>(thisEpic.getSubtasksIdList());
-        ArrayList<Status> subtasksStatusList = new ArrayList<>();
-        for (int id : subtasksIdList) {
-            Subtask subTask = subtasksMap.get(id);
-            Status subTaskStatus = subTask.getStatus();
-            subtasksStatusList.add(subTaskStatus);
-        }
-
+        int statusQuantityCounter = 0;
         int statusNewCounter = 0;
         int statusDoneCounter = 0;
-        for (Status status : subtasksStatusList) {
+
+        for (int id : subtasksIdList) {
+            Subtask subTask = subtasksMap.get(id);
+            Status status = subTask.getStatus();
             switch (status) {
                 case NEW:
                     statusNewCounter++;
@@ -162,11 +160,12 @@ public class InMemoryTaskManager implements TaskManager {
                     statusDoneCounter++;
                     break;
             }
+            statusQuantityCounter++;
         }
 
-        if ((subtasksStatusList.size() == 0) || (statusNewCounter == subtasksStatusList.size())) {
+        if ((statusQuantityCounter == 0) || (statusNewCounter == statusQuantityCounter)) {
             thisEpic.setStatus(Status.NEW);
-        } else if (statusDoneCounter == subtasksStatusList.size()) {
+        } else if (statusDoneCounter == statusQuantityCounter) {
             thisEpic.setStatus(Status.DONE);
         } else {
             thisEpic.setStatus(Status.IN_PROGRESS);

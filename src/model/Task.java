@@ -7,7 +7,7 @@ public class Task {
     private String description;
     private Integer id;
     private Status status;
-    protected int epicId;
+    protected Integer epicId;
     TasksType tasksType;
 
     public String getName() {
@@ -25,6 +25,11 @@ public class Task {
     public Status getStatus() {
         return status;
     }
+
+    public Integer getEpicId() {
+        return epicId;
+    }
+
     public TasksType getTasksType() {
         return tasksType;
     }
@@ -44,6 +49,11 @@ public class Task {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    public void setEpicId(int epicId) {
+        this.epicId = null;
+    }
+
 
     public Task() {
         tasksType = TasksType.TASK;
@@ -74,12 +84,5 @@ public class Task {
                 ", id=" + id +
                 ", status='" + status + '\'' +
                 '}';
-    }
-
-    public int getEpicId() {
-        return epicId;
-    }
-    public void setEpicId(int epicId) {
-        this.epicId = -1;
     }
 }

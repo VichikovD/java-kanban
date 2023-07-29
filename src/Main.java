@@ -14,8 +14,8 @@ public class Main {
         System.out.println(manager1.getAllTasks());
         System.out.println(manager1.getAllSubtasks());
         System.out.println(manager1.getAllEpics());
-        System.out.println();
         System.out.println(manager1.getHistory());
+        System.out.println();
 
         Task task1 = new Task();
         task1.setDescription("Description T1");
@@ -33,11 +33,8 @@ public class Main {
         epic1.setDescription("Description E1");
         epic1.setName("E1");
         manager1.createEpic(epic1);
-        System.out.println(manager1.getAllEpics());
-        System.out.println();
 
         manager1.getTaskById(2);
-
 
         Subtask subTask1 = new Subtask();
         subTask1.setDescription("Description S1");
@@ -48,11 +45,12 @@ public class Main {
 
         manager1.getSubtaskById(4);
 
-        TaskManager manager2 = Managers.getDefaults();
+        TaskManager manager2 = FileBackedTasksManager.loadFromFile("AutoSave.csv");
 
-        System.out.println("Task maps are identical :" + manager1.getAllTasks().equals(manager2.getAllTasks()));
-        System.out.println("Subtask maps are identical :" + manager1.getAllSubtasks().equals(manager2.getAllSubtasks()));
-        System.out.println("Epic maps are identical :" + manager1.getAllEpics().equals(manager2.getAllEpics()));
+        System.out.println("Task maps are identical: " + manager1.getAllTasks().equals(manager2.getAllTasks()));
+        System.out.println("Subtask maps are identical: " + manager1.getAllSubtasks().equals(manager2.getAllSubtasks()));
+        System.out.println("Epic maps are identical: " + manager1.getAllEpics().equals(manager2.getAllEpics()));
+        System.out.println("Histories are identical: " + manager1.getHistory().equals(manager2.getHistory()));
         System.out.println();
 
 
@@ -75,11 +73,6 @@ public class Main {
         epic2.setName("E2");
         manager1.createEpic(epic2);
 
-        System.out.println(manager1.getAllTasks());
-        System.out.println(manager1.getAllSubtasks());
-        System.out.println(manager1.getAllEpics());
-        System.out.println();
-
         manager1.getEpicById(3);
         manager1.getEpicById(7);
         manager1.getTaskById(1);
@@ -94,10 +87,12 @@ public class Main {
         System.out.println(manager1.getHistory());
         System.out.println("");
 
-        TaskManager manager3 = Managers.getDefaults();
+        manager2 = FileBackedTasksManager.loadFromFile("AutoSave.csv");
 
-        System.out.println("Task maps are identical :" + manager1.getAllTasks().equals(manager3.getAllTasks()));
-        System.out.println("Subtask maps are identical :" + manager1.getAllSubtasks().equals(manager3.getAllSubtasks()));
-        System.out.println("Epic maps are identical :" + manager1.getAllEpics().equals(manager3.getAllEpics()));
+        System.out.println("Task maps are identical :" + manager1.getAllTasks().equals(manager2.getAllTasks()));
+        System.out.println("Subtask maps are identical :" + manager1.getAllSubtasks().equals(manager2.getAllSubtasks()));
+        System.out.println("Epic maps are identical :" + manager1.getAllEpics().equals(manager2.getAllEpics()));
+        System.out.println("Histories are identical: " + manager1.getHistory().equals(manager2.getHistory()));
+
     }
 }

@@ -89,36 +89,4 @@ public class InMemoryHistoryManager implements HistoryManager {
             this.next = next;
         }
     }
-
-    public static String historyToString(HistoryManager manager) {
-        List<Task> historyList =  manager.getHistory();
-        StringBuilder tasksIdLine = new StringBuilder();
-        int counter = 0;
-        for (Task task : historyList) {
-            tasksIdLine.append(task.getId());
-            counter += 1;
-            if (historyList.size() != counter) {
-                tasksIdLine.append(",");
-            }
-        }
-        return tasksIdLine.toString();
-    }
-
-    /*static void stringToHistory(String value) {
-        String[] idList
-    }*/
-
-    /*public String toString() {
-        List<Task> historyList =  manager.getHistory();
-        StringBuilder tasksIdLine = new StringBuilder();
-        int counter = 0;
-        for (Task task : historyList) {
-            tasksIdLine.append(task.getId());
-            counter += 1;
-            if (historyList.size() != counter) {
-                tasksIdLine.append(",");
-            }
-        }
-        return tasksIdLine.toString();
-    }*/
 }

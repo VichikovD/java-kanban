@@ -1,17 +1,16 @@
 package service.file;
 
 import model.*;
-import service.mem.InMemoryHistoryManager;
 import service.mem.InMemoryTaskManager;
-import util.CSVConverter;
-import util.ManagerLoadException;
-import util.ManagerSaveException;
+import service.file.exception.ManagerLoadException;
+import service.file.exception.ManagerSaveException;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
@@ -124,47 +123,51 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             stringToSave.append(CSVConverter.taskToString(epic)).append(lSeparator);
         }
         for (Subtask subtask : subtasksMap.values()) {
-            stringToSave.append(CSVConverter.subtaskToString(subtask)).append(lSeparator);
+            stringToSave.append(CSVConverter.taskToString(subtask)).append(lSeparator);
         }
-        stringToSave.append(lSeparator).append(InMemoryHistoryManager.historyToString(historyManager));
+        stringToSave.append(lSeparator).append(CSVConverter.historyToString(historyManager));
         try {
             Files.writeString(path, stringToSave.toString());
         } catch (IOException exc) {
+            System.out.println("Error occurred during saving to file: " + path.getFileName());
             throw new ManagerSaveException(exc.getMessage(), exc);
         }
     }
 
     public static FileBackedTasksManager loadFromFile(String path) {
         FileBackedTasksManager taskManager = new FileBackedTasksManager("AutoSave.csv");
-        String[] linesFromFile = null;
+        List<String> linesFromFile;
         try {
-            linesFromFile = Files.readAllLines(Paths.get(path)).toArray(new String[0]);
+            linesFromFile = Files.readAllLines(Paths.get(path));
         } catch (IOException exc) {
+            System.out.println("Error occurred during loading from file: " + path);
             throw new ManagerLoadException(exc.getMessage(), exc);
         }
-        if(linesFromFile[0].equals("")) {
-            return taskManager;
-        }
+        int emptyLineIndex = linesFromFile.indexOf("");
         Map<Integer, Task> allTasksMap = new HashMap<>();
+        int maxId = 0;
 
-        for (int i = 1; i < linesFromFile.length - 2; i++) {
-            String[] taskElements = linesFromFile[i].split(",");
+        for (int i = 1; i < emptyLineIndex; i++) {
+            String[] taskElements = linesFromFile.get(i).split(",");
             TasksType taskType = TasksType.valueOf(taskElements[1]);
+            int id = Integer.parseInt(taskElements[0]);
+            if (maxId < id) {
+                maxId = id;
+            }
             switch (taskType) {
                 case TASK:
-                    Task task = CSVConverter.stringToTask(linesFromFile[i]);
+                    Task task = CSVConverter.stringToTask(linesFromFile.get(i));
                     taskManager.tasksMap.put(task.getId(), task);
                     allTasksMap.put(task.getId(), task);
                     break;
                 case EPIC:
-                    Epic epic = CSVConverter.stringToEpic(linesFromFile[i]);
+                    Epic epic = (Epic) CSVConverter.stringToTask(linesFromFile.get(i));
                     taskManager.epicsMap.put(epic.getId(), epic);
                     allTasksMap.put(epic.getId(), epic);
                     break;
                 case SUBTASK:
-                    Subtask subtask = CSVConverter.stringToSubtask(linesFromFile[i]);
+                    Subtask subtask = (Subtask) CSVConverter.stringToTask(linesFromFile.get(i));
                     taskManager.subtasksMap.put(subtask.getId(), subtask);
-
                     allTasksMap.put(subtask.getId(), subtask);
                     break;
             }
@@ -175,15 +178,14 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             epicOfThisSubtask.addSubtaskId(subtask.getId());
         }
 
-        int lastLineNumber = linesFromFile.length - 1;
-        String lastLine = linesFromFile[lastLineNumber];
-        int[] historyElements = CSVConverter.stringToIdArray(lastLine);
+        int historyLineNumber = emptyLineIndex + 1;
+        String historyLine = linesFromFile.get(historyLineNumber);
+        int[] historyElements = CSVConverter.stringToIdArray(historyLine);
 
         for (int id : historyElements) {
             taskManager.historyManager.add(allTasksMap.get(id));
         }
-        taskManager.setTaskCounter(allTasksMap.size());
-        allTasksMap = null;
+        taskManager.setTaskCounter(maxId);
         return taskManager;
     }
 

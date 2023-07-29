@@ -1,12 +1,15 @@
 package model;
 
 public class Subtask extends Task {
+    public Subtask() {
+        super();
+        tasksType = TasksType.SUBTASK;
+    }
 
     @Override
     public void setEpicId(int epicId) {
         this.epicId = epicId;
     }
-
 
     @Override
     public String toString() {
@@ -29,10 +32,5 @@ public class Subtask extends Task {
         subtask.setEpicId(Integer.parseInt(data[5]));
 
         return subtask;
-    }
-
-    public Subtask() {
-        super();
-        tasksType = TasksType.SUBTASK;
     }
 }

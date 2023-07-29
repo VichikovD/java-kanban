@@ -9,18 +9,13 @@ public class Managers {
     private Managers() {
     }
 
-    public static InMemoryTaskManager getInMemoryTaskManager() {
-        InMemoryTaskManager taskManager = new InMemoryTaskManager();
-        return taskManager;
-    }
-
     public static HistoryManager getDefaultHistory() {
         HistoryManager historyManager = new InMemoryHistoryManager();
         return historyManager;
     }
 
     public static TaskManager getDefaults() {
-        TaskManager taskManager = FileBackedTasksManager.loadFromFile("AutoSave.csv");
+        TaskManager taskManager = new FileBackedTasksManager("AutoSave.csv");
         return taskManager;
     }
 

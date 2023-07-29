@@ -1,6 +1,4 @@
-package util;
-
-import java.io.IOException;
+package service.file.exception;
 
 public class ManagerLoadException extends RuntimeException {
     public ManagerLoadException(String message, Exception exc) {
