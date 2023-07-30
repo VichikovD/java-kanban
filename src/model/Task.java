@@ -3,12 +3,25 @@ package model;
 import java.util.Objects;
 
 public class Task {
-    private String name;
-    private String description;
-    private Integer id;
-    private Status status;
+    protected String name;
+    protected String description;
+    protected Integer id;
+    protected Status status;
     protected Integer epicId;
-    TasksType tasksType;
+    protected TasksType tasksType;
+
+    public Task() {
+        tasksType = TasksType.TASK;
+    }
+
+    public Task(Integer id, String name, Status status, String description) {
+        this.name = name;
+        this.description = description;
+        this.id = id;
+        this.status = status;
+        this.epicId = null;
+        this.tasksType = TasksType.TASK;
+    }
 
     public String getName() {
         return name;
@@ -52,11 +65,6 @@ public class Task {
 
     public void setEpicId(int epicId) {
         this.epicId = null;
-    }
-
-
-    public Task() {
-        tasksType = TasksType.TASK;
     }
 
     @Override

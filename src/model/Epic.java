@@ -4,12 +4,19 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Epic extends Task {
-    private List<Integer> subtasksIdList = new ArrayList<>();
+    private List<Integer> subtasksIdList;
 
     public Epic() {
         super();
         setStatus(Status.NEW);
         tasksType = TasksType.EPIC;
+        this.subtasksIdList = new ArrayList<>();
+    }
+
+    public Epic(Integer id, String name, Status status, String description) {
+        super(id, name, status, description);
+        this.tasksType = TasksType.EPIC;
+        this.subtasksIdList = new ArrayList<>();
     }
 
     public List<Integer> getSubtasksIdList() {
@@ -42,17 +49,4 @@ public class Epic extends Task {
                 ", status='" + getStatus() + '\'' +
                 '}';
     }
-
-    public static Epic epicFromStringArray(String[] data) {
-        Epic epic = new Epic();
-
-        epic.setId(Integer.parseInt(data[0]));
-        epic.setName(data[2]);
-        epic.setStatus(Status.valueOf(data[3]));
-        epic.setDescription(data[4]);
-
-        return epic;
-    }
-
-
 }

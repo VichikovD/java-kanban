@@ -114,8 +114,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     public void save() {
-        StringBuilder stringToSave = new StringBuilder(CSVConverter.HEADER);
         String lSeparator = System.lineSeparator();
+        StringBuilder stringToSave = new StringBuilder(CSVConverter.HEADER + lSeparator);
         for (Task task : tasksMap.values()) {
             stringToSave.append(CSVConverter.taskToString(task)).append(lSeparator);
         }
@@ -129,26 +129,29 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             Files.writeString(path, stringToSave.toString());
         } catch (IOException exc) {
-            System.out.println("Error occurred during saving to file: " + path.getFileName());
-            throw new ManagerSaveException(exc.getMessage(), exc);
+            throw new ManagerSaveException(exc.getMessage(), exc, path.getFileName().toString());
         }
     }
 
     public static FileBackedTasksManager loadFromFile(String path) {
-        FileBackedTasksManager taskManager = new FileBackedTasksManager("AutoSave.csv");
+        FileBackedTasksManager taskManager = new FileBackedTasksManager(path);
         List<String> linesFromFile;
         try {
             linesFromFile = Files.readAllLines(Paths.get(path));
         } catch (IOException exc) {
-            System.out.println("Error occurred during loading from file: " + path);
-            throw new ManagerLoadException(exc.getMessage(), exc);
+            throw new ManagerLoadException(exc.getMessage(), exc, taskManager.path.getFileName().toString());
         }
-        int emptyLineIndex = linesFromFile.indexOf("");
+        int emptyLineIndex = 0;
         Map<Integer, Task> allTasksMap = new HashMap<>();
         int maxId = 0;
 
-        for (int i = 1; i < emptyLineIndex; i++) {
-            String[] taskElements = linesFromFile.get(i).split(",");
+        for (int i = 1; i < linesFromFile.size(); i++) {
+            String line = linesFromFile.get(i);
+            if (line.equals("")) {
+                emptyLineIndex = i;
+                break;
+            }
+            String[] taskElements = line.split(",");
             TasksType taskType = TasksType.valueOf(taskElements[1]);
             int id = Integer.parseInt(taskElements[0]);
             if (maxId < id) {
@@ -171,7 +174,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     allTasksMap.put(subtask.getId(), subtask);
                     break;
             }
-
         }
         for (Subtask subtask : taskManager.getAllSubtasks()) {
             Epic epicOfThisSubtask = taskManager.epicsMap.get(subtask.getEpicId());

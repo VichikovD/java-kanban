@@ -6,7 +6,7 @@ import service.HistoryManager;
 import java.util.List;
 
 public class CSVConverter {
-    public static final String HEADER = "id,type,name,status,description,epic" + System.lineSeparator();
+    public static final String HEADER = "id,type,name,status,description,epic";
 
     public static int[] stringToIdArray(String line) {
         String[] lineElements = line.split(",");
@@ -42,25 +42,25 @@ public class CSVConverter {
 
     public static Task stringToTask(String value) {
         String[] data = value.split(",");
-        TasksType type = TasksType.valueOf(data[1]);
         Task task = null;
+
+        Integer id = Integer.parseInt(data[0]);
+        TasksType type = TasksType.valueOf(data[1]);
+        String name = data[2];
+        Status status = Status.valueOf(data[3]);
+        String description = data[4];
         switch (type) {
             case TASK:
-                task = new Task();
+                task = new Task(id, name, status, description);
                 break;
             case SUBTASK:
-                task = new Subtask();
-                task.setEpicId(Integer.parseInt(data[5]));
+                Integer epicId = Integer.parseInt(data[5]);
+                task = new Subtask(id, name, status, description, epicId);
                 break;
             case EPIC:
-                task = new Epic();
+                task = new Epic(id, name, status, description);
                 break;
         }
-
-        task.setId(Integer.parseInt(data[0]));
-        task.setName(data[2]);
-        task.setStatus(Status.valueOf(data[3]));
-        task.setDescription(data[4]);
         return task;
     }
 }

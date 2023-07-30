@@ -6,6 +6,12 @@ public class Subtask extends Task {
         tasksType = TasksType.SUBTASK;
     }
 
+    public Subtask(Integer id, String name, Status status, String description, Integer epicId) {
+        super(id, name, status, description);
+        this.tasksType = TasksType.SUBTASK;
+        this.epicId = epicId;
+    }
+
     @Override
     public void setEpicId(int epicId) {
         this.epicId = epicId;
@@ -20,17 +26,5 @@ public class Subtask extends Task {
                 ", id=" + getId() +
                 ", status='" + getStatus() + '\'' +
                 '}';
-    }
-
-    public static Subtask subtaskFromStringArray(String[] data) {
-        Subtask subtask = new Subtask();
-
-        subtask.setId(Integer.parseInt(data[0]));
-        subtask.setName(data[2]);
-        subtask.setStatus(Status.valueOf(data[3]));
-        subtask.setDescription(data[4]);
-        subtask.setEpicId(Integer.parseInt(data[5]));
-
-        return subtask;
     }
 }

@@ -1,7 +1,10 @@
 package service.file.exception;
 
 public class ManagerLoadException extends RuntimeException {
-    public ManagerLoadException(String message, Exception exc) {
+    String fileName;
+
+    public ManagerLoadException(String message, Exception exc, String fileName) {
         super(message, exc);
+        this.fileName = fileName;
     }
 }
