@@ -129,7 +129,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             Files.writeString(path, stringToSave.toString());
         } catch (IOException exc) {
-            throw new ManagerSaveException(exc.getMessage(), exc, path.getFileName().toString());
+            throw new ManagerSaveException("File name - " + path.getFileName().toString(), exc);
         }
     }
 
@@ -139,7 +139,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             linesFromFile = Files.readAllLines(Paths.get(path));
         } catch (IOException exc) {
-            throw new ManagerLoadException(exc.getMessage(), exc, taskManager.path.getFileName().toString());
+            String lSeparator = System.lineSeparator();
+            throw new ManagerLoadException("File name - " + path, exc);
         }
         int emptyLineIndex = 0;
         Map<Integer, Task> allTasksMap = new HashMap<>();
@@ -147,31 +148,31 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         for (int i = 1; i < linesFromFile.size(); i++) {
             String line = linesFromFile.get(i);
-            if (line.equals("")) {
+            if (line.isEmpty()) {
                 emptyLineIndex = i;
                 break;
             }
-            String[] taskElements = line.split(",");
-            TasksType taskType = TasksType.valueOf(taskElements[1]);
-            int id = Integer.parseInt(taskElements[0]);
+            Task task = CSVConverter.stringToTask(line);
+
+            int id = task.getId();
             if (maxId < id) {
                 maxId = id;
             }
-            switch (taskType) {
+
+            switch (task.getTasksType()) {
                 case TASK:
-                    Task task = CSVConverter.stringToTask(linesFromFile.get(i));
-                    taskManager.tasksMap.put(task.getId(), task);
-                    allTasksMap.put(task.getId(), task);
+                    taskManager.tasksMap.put(id, task);
+                    allTasksMap.put(id, task);
                     break;
                 case EPIC:
-                    Epic epic = (Epic) CSVConverter.stringToTask(linesFromFile.get(i));
-                    taskManager.epicsMap.put(epic.getId(), epic);
-                    allTasksMap.put(epic.getId(), epic);
+                    Epic epic = (Epic) task;
+                    taskManager.epicsMap.put(id, epic);
+                    allTasksMap.put(id, epic);
                     break;
                 case SUBTASK:
-                    Subtask subtask = (Subtask) CSVConverter.stringToTask(linesFromFile.get(i));
-                    taskManager.subtasksMap.put(subtask.getId(), subtask);
-                    allTasksMap.put(subtask.getId(), subtask);
+                    Subtask subtask = (Subtask) task;
+                    taskManager.subtasksMap.put(id, subtask);
+                    allTasksMap.put(id, subtask);
                     break;
             }
         }
