@@ -1,0 +1,9 @@
+id,type,name,status,description,startTime,durationInMinutes,epic
+2,TASK,T2,DONE,Description T2,null,0,
+3,EPIC,New Name,IN_PROGRESS,New Description,2020-07-01T00:00:00Z,133920,
+7,EPIC,E2,NEW,Description E2,null,0,
+4,SUBTASK,S1,DONE,Description S1,2023-01-01T00:00:00Z,44640,3
+5,SUBTASK,S2,NEW,Description S2,2020-07-01T00:00:00Z,44640,3
+6,SUBTASK,S3,IN_PROGRESS,Description S3,2023-05-01T00:00:00Z,44640,3
+
+3,7,2,4,6,5

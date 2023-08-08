@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
     private final Path path;
@@ -158,11 +159,11 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             if (maxId < id) {
                 maxId = id;
             }
-
             switch (task.getTasksType()) {
                 case TASK:
                     taskManager.tasksMap.put(id, task);
                     allTasksMap.put(id, task);
+                    taskManager.prioritizedTasksSet.add(task);
                     break;
                 case EPIC:
                     Epic epic = (Epic) task;
@@ -173,6 +174,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     Subtask subtask = (Subtask) task;
                     taskManager.subtasksMap.put(id, subtask);
                     allTasksMap.put(id, subtask);
+                    taskManager.prioritizedTasksSet.add(subtask);
                     break;
             }
         }
@@ -181,7 +183,17 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             epicOfThisSubtask.addSubtaskId(subtask.getId());
         }
 
+        for (Epic epic : taskManager.getAllEpics()) {
+            taskManager.getEpicEndTime(epic.getId());
+        }
+
         int historyLineNumber = emptyLineIndex + 1;
+        if (linesFromFile.size() == historyLineNumber) {
+            historyLineNumber = linesFromFile.size() - 1;
+        }
+        if (linesFromFile.get(historyLineNumber).equals("")) {
+            return taskManager;
+        }
         String historyLine = linesFromFile.get(historyLineNumber);
         int[] historyElements = CSVConverter.stringToIdArray(historyLine);
 
@@ -191,5 +203,16 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         taskManager.setTaskCounter(maxId);
         return taskManager;
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FileBackedTasksManager that = (FileBackedTasksManager) o;
+        return Objects.equals(tasksMap, that.tasksMap) && Objects.equals(subtasksMap, that.subtasksMap) && Objects.equals(epicsMap, that.epicsMap) && Objects.equals(historyManager, that.historyManager);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(tasksMap, subtasksMap, epicsMap, historyManager);
+    }
 }

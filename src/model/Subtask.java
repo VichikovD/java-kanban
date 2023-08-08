@@ -1,13 +1,21 @@
 package model;
 
+import java.time.Instant;
+
 public class Subtask extends Task {
     public Subtask() {
         super();
         tasksType = TasksType.SUBTASK;
     }
 
-    public Subtask(Integer id, String name, Status status, String description, Integer epicId) {
-        super(id, name, status, description);
+    public Subtask(Integer id, String name, Status status, String description, Instant startTime, long durationInMinutes, Integer epicId) {
+        super(id, name, status, description, startTime, durationInMinutes);
+        this.tasksType = TasksType.SUBTASK;
+        this.epicId = epicId;
+    }
+
+    public Subtask(String name, Status status, String description, Instant startTime, long durationInMinutes, Integer epicId) {
+        super(name, status, description, startTime, durationInMinutes);
         this.tasksType = TasksType.SUBTASK;
         this.epicId = epicId;
     }
@@ -21,10 +29,13 @@ public class Subtask extends Task {
     public String toString() {
         return "Subtask{" +
                 "epicId=" + epicId +
-                ", name='" + getName() + '\'' +
-                ", description='" + getDescription() + '\'' +
-                ", id=" + getId() +
-                ", status='" + getStatus() + '\'' +
+                ", id=" + id +
+                ", type='" + tasksType + '\'' +
+                ", name='" + name + '\'' +
+                ", status=" + status +
+                ", description='" + description + '\'' +
+                ", startTime='" + startTime +
+                ", durationInMinutes='" + durationInMinutes +
                 '}';
     }
 }

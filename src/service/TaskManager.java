@@ -1,5 +1,6 @@
 package service;
 
+import java.util.HashMap;
 import java.util.List;
 
 import model.Task;
@@ -7,7 +8,6 @@ import model.Epic;
 import model.Subtask;
 
 public interface TaskManager {
-
     public List<Task> getHistory();
 
     public void createTask(Task task);
@@ -47,4 +47,5 @@ public interface TaskManager {
     public void deleteAllSubtasks();
 
     public void deleteAllTasks();
+    public List<Task> getPrioritizedTasks();
 }
