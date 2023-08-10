@@ -10,7 +10,6 @@ public class Epic extends Task {
     protected Instant endTime;
 
 
-
     public Epic() {
         super();
         setStatus(Status.NEW);
@@ -25,18 +24,11 @@ public class Epic extends Task {
         this.endTime = null;
     }
 
-    public Epic(Integer id, String name, Status status, String description, Instant startTime, long durationInMinutes, List<Integer> subtasksIdList) {
+    public Epic(Integer id, String name, Status status, String description, Instant startTime, long durationInMinutes) {
         super(id, name, status, description, startTime, durationInMinutes);
         this.tasksType = TasksType.EPIC;
-        this.subtasksIdList = subtasksIdList;
+        this.subtasksIdList = new ArrayList<>();
     }
-
-    /*public Epic(Integer id, String name, Status status, String description, Instant startTime, long durationInMinutes, List<Integer> subtasksIdList) {
-        super(id, name, status, description, startTime, durationInMinutes);
-        this.tasksType = TasksType.EPIC;
-        this.subtasksIdList = subtasksIdList;
-    }*/
-
 
     public List<Integer> getSubtasksIdList() {
         return subtasksIdList;

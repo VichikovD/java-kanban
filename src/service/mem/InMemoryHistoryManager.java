@@ -84,36 +84,10 @@ public class InMemoryHistoryManager implements HistoryManager {
         Node<E> prev;
         Node<E> next;
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Node<?> node = (Node<?>) o;
-            return Objects.equals(data, node.data);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(data);
-        }
-
         public Node(Node<E> prev, E data, Node<E> next) {
             this.prev = prev;
             this.data = data;
             this.next = next;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        InMemoryHistoryManager that = (InMemoryHistoryManager) o;
-        return Objects.equals(nodeMap, that.nodeMap);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(nodeMap);
     }
 }

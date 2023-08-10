@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CSVConverter {
-    public static final String HEADER = "id,type,name,status,description,startTime,durationInMinutes,epic";
+    public static final String HEADER = "id,type,name,status,description,epic,startTime,durationInMinutes";
 
     public static int[] stringToIdArray(String line) {
         String[] lineElements = line.split(",");
@@ -34,17 +34,8 @@ public class CSVConverter {
     }
 
     public static String taskToString(Task task) {
-        String startTime = null;
-        if (task.getStartTime() == null) {
-            startTime = "null";
-        } else {
-            startTime = task.getStartTime().toString();
-        }
-        String result = String.format("%s,%s,%s,%s,%s,%s,%s,", task.getId(), task.getTasksType().toString(),
-                task.getName(), task.getStatus(), task.getDescription(), startTime,task.getDurationInMinutes());
-        if (task.getEpicId() != null) {
-            result += task.getEpicId();
-        }
+        String result = String.format("%s,%s,%s,%s,%s,%s,%s,%s", task.getId(), task.getTasksType(),
+                task.getName(), task.getStatus(), task.getDescription(),task.getEpicId(), task.getStartTime(), task.getDurationInMinutes());
         return result;
     }
 
@@ -58,20 +49,21 @@ public class CSVConverter {
         Status status = Status.valueOf(data[3]);
         String description = data[4];
         Instant startTime = null;
-        if (!data[5].equals("null")) {
-            startTime = Instant.parse(data[5]);
+        String dataStartTime = data[6];
+        if (!dataStartTime.equals("null")) {
+            startTime = Instant.parse(dataStartTime);
         }
-        long durationInMinutes = Long.parseLong(data[6]);
+        long durationInMinutes = Long.parseLong(data[7]);
         switch (type) {
             case TASK:
                 task = new Task(id, name, status, description, startTime, durationInMinutes);
                 break;
             case SUBTASK:
-                Integer epicId = Integer.parseInt(data[7]);
+                Integer epicId = Integer.parseInt(data[5]);
                 task = new Subtask(id, name, status, description, startTime, durationInMinutes, epicId);
                 break;
             case EPIC:
-                task = new Epic(id, name, status, description, startTime, durationInMinutes, new ArrayList<>());
+                task = new Epic(id, name, status, description, startTime, durationInMinutes);
                 break;
         }
         return task;

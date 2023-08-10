@@ -23,37 +23,25 @@ public class InMemoryTaskManager implements TaskManager {
     protected HistoryManager historyManager = Managers.getDefaultHistory();
 
     public boolean isTimeIntersection(Task taskToValidate) {
-        boolean isIntersected = false;
         Instant toValidateStartTime = taskToValidate.getStartTime();
         if (toValidateStartTime == null) {
-            return isIntersected;
+            return false;
         }
         Instant toValidateEndTime = taskToValidate.getEndTime();
-        List<Task> noNullPrioritizedTasks = getPrioritizedTasks().stream().
-                filter(task -> task.getStartTime() != null).
-                collect(Collectors.toList());
-        for (Task task : noNullPrioritizedTasks) {
-            if (task.getId() == taskToValidate.getId()) {
+
+        for (Task task : getPrioritizedTasks()) {
+            if (task.getStartTime() == null || task.getId() == taskToValidate.getId()) {
                 continue;
             }
             Instant startTime = task.getStartTime();
             Instant endTime = task.getEndTime();
-            if (
-                    (toValidateStartTime.isAfter(startTime) && toValidateStartTime.isBefore(endTime))
-                    || (toValidateEndTime.isAfter(startTime) && toValidateEndTime.isBefore(endTime))
-                    || (startTime.isAfter(toValidateStartTime) && startTime.isBefore(toValidateEndTime))
-                    || (endTime.isAfter(toValidateStartTime) && endTime.isBefore(toValidateEndTime))
-                    || (toValidateStartTime.equals(startTime) && toValidateEndTime.equals(endTime))
-                    || (toValidateEndTime.equals(startTime))
-                    || (toValidateStartTime.equals(endTime))
-            ) {
-                isIntersected = true;
-            }
-            if (isIntersected) {
-                return isIntersected;
+            if (toValidateStartTime.isAfter(endTime) || toValidateEndTime.isBefore(startTime)) {
+                continue;
+            } else {
+                return true;
             }
         }
-        return isIntersected;
+        return false;
     }
 
     public InMemoryTaskManager() {
@@ -102,7 +90,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void createTask(Task thatTask) {
-        Instant startTime = thatTask.getStartTime();
         thatTask.setId(getNewId());
         if (isTimeIntersection(thatTask)) {
             System.out.println("Task is not created - execution time cannot coincide with other tasks");
@@ -148,8 +135,8 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createSubtask(Subtask thatSubtask) {
         int epicId = thatSubtask.getEpicId();
-        Epic epicOfThatSubtask = epicsMap.get(epicId);
-        if (epicOfThatSubtask == null) {
+        Epic commonEpic = epicsMap.get(epicId);
+        if (commonEpic == null) {
             System.out.println("Error in createSubtask - Epic is not found by Epic ID. Subtask did't created.");
             return;
         }
@@ -172,9 +159,9 @@ public class InMemoryTaskManager implements TaskManager {
         subtasksMap.put(thisSubtask.getId(), thisSubtask);
         prioritizedTasksSet.add(thisSubtask);
 
-        epicOfThatSubtask.addSubtaskId(thisSubtask.getId());
+        commonEpic.addSubtaskId(thisSubtask.getId());
         updateEpicStatus(epicId);
-        getEpicEndTime(epicId);
+        calcEpicEndTime(commonEpic);
     }
 
     @Override
@@ -187,8 +174,8 @@ public class InMemoryTaskManager implements TaskManager {
 
         int thisSubtaskId = thisSubtask.getId();
         int thatSubtaskEpicId = thatSubtask.getEpicId();
-        Epic epicOfThatSubTask = epicsMap.get(thatSubtaskEpicId);
-        if (epicOfThatSubTask == null) {
+        Epic epicOfThatSubtask = epicsMap.get(thatSubtaskEpicId);
+        if (epicOfThatSubtask == null) {
             System.out.println("Error in updateSubtask - Epic is not found by Subtask's Epic ID. Subtask didn't updated.");
             return;
         }
@@ -200,10 +187,10 @@ public class InMemoryTaskManager implements TaskManager {
 
         int thisSubtaskEpicId = thisSubtask.getEpicId();
         Epic epicOfThisSubtask = epicsMap.get(thisSubtaskEpicId);
-        if (epicOfThisSubtask != epicOfThatSubTask) {
+        if (epicOfThisSubtask != epicOfThatSubtask) {
             epicOfThisSubtask.removeSubtaskId(thisSubtaskId);
             updateEpicStatus(thisSubtaskEpicId);
-            getEpicEndTime(thisSubtaskEpicId);
+            calcEpicEndTime(epicOfThisSubtask);
         }
         prioritizedTasksSet.remove(thisSubtask);
         thisSubtask.setEpicId(thatSubtaskEpicId);
@@ -215,9 +202,9 @@ public class InMemoryTaskManager implements TaskManager {
         subtasksMap.put(thisSubtaskId, thisSubtask);
         prioritizedTasksSet.add(thisSubtask);
 
-        epicOfThatSubTask.addSubtaskId(thisSubtaskId);
+        epicOfThatSubtask.addSubtaskId(thisSubtaskId);
         updateEpicStatus(thatSubtaskEpicId);
-        getEpicEndTime(thatSubtaskEpicId);
+        calcEpicEndTime(epicOfThatSubtask);
     }
 
     @Override
@@ -229,7 +216,6 @@ public class InMemoryTaskManager implements TaskManager {
                 thatEpic.getDescription()
         );
         epicsMap.put(thisEpic.getId(), thisEpic);
-        thatEpic.setId(thisEpic.getId());
     }
 
     @Override
@@ -243,7 +229,7 @@ public class InMemoryTaskManager implements TaskManager {
         thisEpic.setDescription(thatEpic.getDescription());
         epicsMap.put(comonId, thisEpic);
         updateEpicStatus(comonId);
-        getEpicEndTime(comonId);
+        calcEpicEndTime(thisEpic);
     }
 
     protected void updateEpicStatus(int epicId) {
@@ -281,10 +267,9 @@ public class InMemoryTaskManager implements TaskManager {
         epicsMap.put(thisEpic.getId(), thisEpic);
     }
 
-    public void getEpicEndTime(int epicId) {
-        Epic thisEpic = epicsMap.get(epicId);
+    public void calcEpicEndTime(Epic thisEpic) {
         if (thisEpic == null) {
-            System.out.println("Error in getEpicEndTime - epic ID is not found");
+            System.out.println("Error in calcEpicEndTime - epic ID is not found");
             return;
         }
         ArrayList<Integer> subtasksIdList = new ArrayList<>(thisEpic.getSubtasksIdList());
@@ -411,7 +396,7 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = epicsMap.get(epicIdOfSubtask);
         epic.removeSubtaskId(subtaskId);
         updateEpicStatus(epicIdOfSubtask);
-        getEpicEndTime(epicIdOfSubtask);
+        calcEpicEndTime(epic);
         historyManager.remove(subtaskId);
 
     }
@@ -473,18 +458,5 @@ public class InMemoryTaskManager implements TaskManager {
             prioritizedTasksSet.remove(entry.getValue());
         }
         tasksMap.clear();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        InMemoryTaskManager that = (InMemoryTaskManager) o;
-        return Objects.equals(tasksMap, that.tasksMap) && Objects.equals(subtasksMap, that.subtasksMap) && Objects.equals(epicsMap, that.epicsMap) && Objects.equals(prioritizedTasksSet, that.prioritizedTasksSet) && Objects.equals(historyManager, that.historyManager);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(tasksMap, subtasksMap, epicsMap, prioritizedTasksSet, historyManager);
     }
 }

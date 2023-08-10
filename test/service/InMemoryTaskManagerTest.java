@@ -1,4 +1,4 @@
-package service.mem;
+package service;
 
 import model.Epic;
 import model.Status;
@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import service.TaskManagerTest;
+import service.mem.InMemoryTaskManager;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
 
     @Test
     public void EpicStatusShouldUpdateToNEW() {
-        Epic madeEpic = new Epic(1, "Epic1 name", Status.DONE, "Epic1 description", null, 0, List.of());
+        Epic madeEpic = new Epic(1, "Epic1 name", Status.DONE, "Epic1 description", null, 0);
         taskManager.createEpic(madeEpic);
 
         Status expectedEpicStatus = Status.NEW;
@@ -30,7 +31,7 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
 
     @Test
     public void EpicStatusShouldUpdateToNEW2() {
-        Epic madeEpic = new Epic(1, "Epic1 name", Status.NEW, "Epic1 description", null, 0, List.of());
+        Epic madeEpic = new Epic(1, "Epic1 name", Status.NEW, "Epic1 description", null, 0);
         taskManager.createEpic(madeEpic);
 
         Subtask madeSubtask1 = new Subtask(2, "Subtask1 name", Status.NEW, "Subtask1 description", null, 0, 1);
@@ -45,7 +46,7 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
 
     @Test
     public void EpicStatusShouldUpdateToDONE() {
-        Epic madeEpic = new Epic(1, "Epic1 name", Status.NEW, "Epic1 description", null, 0, List.of());
+        Epic madeEpic = new Epic(1, "Epic1 name", Status.NEW, "Epic1 description", null, 0);
         taskManager.createEpic(madeEpic);
 
         Subtask madeSubtask1 = new Subtask(2, "Subtask1 name", Status.DONE, "Subtask1 description", null, 0, 1);
@@ -60,7 +61,7 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
 
     @Test
     public void EpicStatusShouldUpdateToIN_PROGRESS() {
-        Epic madeEpic = new Epic(1, "Epic1 name", Status.NEW, "Epic1 description", null, 0, List.of());
+        Epic madeEpic = new Epic(1, "Epic1 name", Status.NEW, "Epic1 description", null, 0);
         taskManager.createEpic(madeEpic);
 
         Subtask madeSubtask1 = new Subtask(2, "Subtask1 name", Status.IN_PROGRESS, "Subtask1 description", null, 0, 1);
@@ -75,7 +76,7 @@ public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager
 
     @Test
     public void EpicStatusShouldUpdateToIN_PROGRESS2() {
-        Epic madeEpic = new Epic(1, "Epic1 name", Status.NEW, "Epic1 description", null, 0, List.of());
+        Epic madeEpic = new Epic(1, "Epic1 name", Status.NEW, "Epic1 description", null, 0);
         taskManager.createEpic(madeEpic);
 
         Subtask madeSubtask1 = new Subtask(2, "Subtask1 name", Status.NEW, "Subtask1 description", null, 0, 1);

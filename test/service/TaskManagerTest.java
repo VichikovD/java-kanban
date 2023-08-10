@@ -163,14 +163,16 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         Subtask expectedSubtask = new Subtask(3, "Subtask1 name", Status.DONE, "Subtask1 description",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2);
         Subtask savedSubtask = taskManager.getSubtaskById(3);
-        assertEquals(
-                expectedSubtask, savedSubtask, "Subtask not created correctly or getSubtaskById didn't return correct Subtask");
+        assertEquals(expectedSubtask, savedSubtask, "Subtask not created correctly or getSubtaskById didn't return " +
+                "correct Subtask");
 
-        Epic expectedEpic = new Epic(
-                2, "Epic2 name", Status.DONE, "Epic2 description", Instant.parse("2023-01-01T00:00:00.000Z"),
-                Duration.ofDays(31).toMinutes(), List.of(3));
+        Epic expectedEpic = new Epic(2, "Epic2 name", Status.DONE, "Epic2 description",
+                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes());
+        expectedEpic.addSubtaskId(3);
         Epic actualEpic = taskManager.getEpicById(2);
         assertEquals(expectedEpic, actualEpic, "Subtask not added to epic's subtascIdList or getEpicById return wrong");
+
+        assertEquals(List.of(3), actualEpic.getSubtasksIdList(), "SubtasksIdList not updated or method return wrong");
     }
 
     /*@Test
@@ -205,9 +207,12 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         taskManager.createSubtask(madeSubtask1);
 
         Epic expectedEpic1 = new Epic(1, "Epic1 name", Status.DONE, "Epic1 description",
-                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), List.of(3));
+                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes());
+        expectedEpic1.addSubtaskId(3);
         Epic actualEpic1 = taskManager.getEpicById(1);
         assertEquals(expectedEpic1, actualEpic1, "Epic's characteristics not updated or getEpicById return wrong");
+
+        assertEquals(List.of(3), actualEpic1.getSubtasksIdList());
 
         Subtask updatedSubtask = new Subtask(3, "New Subtask name", Status.IN_PROGRESS, "New Subtask description",
                 Instant.parse("2023-05-01T13:00:00.000Z"), Duration.ofDays(55).toMinutes(), 2);
@@ -218,14 +223,21 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         Subtask actualSubtask = taskManager.getSubtaskById(3);
         assertEquals(expectedSubtask, actualSubtask, "Subtask not updated correctly");
 
-        Epic expectedUpdatedEpic1 = new Epic(1, "Epic1 name", Status.NEW, "Epic1 description", null, 0, List.of());
+        Epic expectedUpdatedEpic1 = new Epic(1, "Epic1 name", Status.NEW, "Epic1 description", null, 0);
+        expectedUpdatedEpic1.removeSubtaskId(3);
         Epic actualUpdatedEpic1 = taskManager.getEpicById(1);
-        assertEquals(expectedUpdatedEpic1, actualUpdatedEpic1, "Epic's characteristics not updated or getEpicById return wrong");
+        assertEquals(expectedUpdatedEpic1, actualUpdatedEpic1, "Epic's characteristics not updated or getEpicById " +
+                "return wrong");
+
+        assertEquals(List.of(), actualUpdatedEpic1.getSubtasksIdList(), "SubtasksIdList not updated or method return wrong");
 
         Epic expectedEpic2 = new Epic(2, "Epic2 name", Status.IN_PROGRESS, "Epic2 description",
-                Instant.parse("2023-05-01T13:00:00.000Z"), Duration.ofDays(55).toMinutes(), List.of(3));
+                Instant.parse("2023-05-01T13:00:00.000Z"), Duration.ofDays(55).toMinutes());
+        expectedEpic2.addSubtaskId(3);
         Epic actualEpic2 = taskManager.getEpicById(2);
         assertEquals(expectedEpic2, actualEpic2, "Subtask not added to epic's subtascIdList or getEpicById return wrong");
+
+        assertEquals(List.of(3), actualEpic2.getSubtasksIdList(), "SubtasksIdList not updated or method return wrong");
     }
 
 
@@ -247,12 +259,14 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     @Test
     public void createEpic1ShouldCreateEpicAsPerRequirements() {
         Epic madeEpic = new Epic(2, "Epic2 name", Status.IN_PROGRESS, "Epic2 description",
-                Instant.parse("2023-05-01T13:00:00.000Z"), Duration.ofDays(55).toMinutes(), List.of(3));
+                Instant.parse("2023-05-01T13:00:00.000Z"), Duration.ofDays(55).toMinutes());
         taskManager.createEpic(madeEpic);
 
-        Epic expectedEpic = new Epic(1, "Epic2 name", Status.NEW, "Epic2 description", null, 0, List.of());
+        Epic expectedEpic = new Epic(1, "Epic2 name", Status.NEW, "Epic2 description", null, 0);
         Epic actualEpic = taskManager.getEpicById(1);
         assertEquals(expectedEpic, actualEpic, "Epic not created correctly");
+
+        assertEquals(List.of(), actualEpic.getSubtasksIdList(), "SubtasksIdList not updated or method return wrong");
     }
 
     @Test
@@ -261,12 +275,14 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         taskManager.createEpic(madeEpic);
 
         Epic updatedEpic = new Epic(1, "New Epic name", Status.IN_PROGRESS, "new Epic description",
-                Instant.parse("2023-05-01T13:00:00.000Z"), Duration.ofDays(55).toMinutes(), List.of(3));
+                Instant.parse("2023-05-01T13:00:00.000Z"), Duration.ofDays(55).toMinutes());
         taskManager.updateEpic(updatedEpic);
 
-        Epic expectedEpic = new Epic(1, "New Epic name", Status.NEW, "new Epic description", null, 0, List.of());
+        Epic expectedEpic = new Epic(1, "New Epic name", Status.NEW, "new Epic description", null, 0);
         Epic actualEpic = taskManager.getEpicById(1);
         assertEquals(expectedEpic, actualEpic, "Task not updated correctly");
+
+        assertEquals(List.of(), actualEpic.getSubtasksIdList(), "SubtasksIdList not updated or method return wrong");
     }
 
     @Test
@@ -348,12 +364,20 @@ abstract public class TaskManagerTest<T extends TaskManager> {
                 Duration.ofDays(31).toMinutes(), 1);
         taskManager.createSubtask(madeSubtask1);
 
-        List<Epic> expected = List.of(
-                new Epic(1, "Epic name1", Status.DONE, "Epic description1", Instant.parse("2023-07-01T13:00:00.000Z"),
-                        Duration.ofDays(31).toMinutes(), List.of(3)),
-                new Epic(2, "Epic name2", Status.NEW, "Epic description2", null, 0, List.of()));
+        Epic expectedEpic1 = new Epic(1, "Epic name1", Status.DONE, "Epic description1", Instant.parse("2023-07-01T13:00:00.000Z"),
+                Duration.ofDays(31).toMinutes());
+        expectedEpic1.addSubtaskId(3);
+        Epic expectedEpic2 = new Epic(2, "Epic name2", Status.NEW, "Epic description2", null, 0);
+
+        List<Epic> expected = List.of(expectedEpic1, expectedEpic2);
         List<Epic> actual = taskManager.getAllEpics();
         assertEquals(expected, actual, "Returned not correct list of epics");
+
+        assertEquals(List.of(3), taskManager.getEpicById(1).getSubtasksIdList(), "SubtasksIdList not updated or " +
+                "method return wrong");
+
+        assertEquals(List.of(), taskManager.getEpicById(2).getSubtasksIdList(), "SubtasksIdList not updated or " +
+                "method return wrong");
     }
 
     @Test
@@ -408,7 +432,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         Epic madeEpic1 = new Epic(1, "name1", "description1");
         taskManager.createEpic(madeEpic1);
 
-        Epic expected = new Epic(1, "name1", Status.NEW, "description1", null, 0, List.of());
+        Epic expected = new Epic(1, "name1", Status.NEW, "description1", null, 0);
         Epic actual = taskManager.getEpicById(1);
         assertEquals(expected, actual, "Received not correct Task");
     }
@@ -479,10 +503,15 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(expectedPrioritized, actualPrioritized,
                 "Not correctly deleted from prioritized or PrioritizedTasks returned not correct data");
 
-        Epic expectedEpic = new Epic(1, "Epic name",Status.NEW, "Epic description",
-                Instant.parse("2023-07-01T13:00:00.000Z"), Duration.ofDays(31).toMinutes(), List.of(3));
+        Epic expectedEpic = new Epic(1, "Epic name", Status.NEW, "Epic description",
+                Instant.parse("2023-07-01T13:00:00.000Z"), Duration.ofDays(31).toMinutes());
+        expectedEpic.addSubtaskId(3);
         Epic actualEpic = taskManager.getEpicById(1);
         assertEquals(expectedEpic, actualEpic, "Epic's characteristics not correctly updated");
+
+        assertEquals(List.of(3), actualEpic.getSubtasksIdList(), "SubtasksIdList not updated or " +
+                "method return wrong");
+
     }
 
     /*@Test
@@ -516,11 +545,15 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
         taskManager.deleteEpicById(1);
 
-        List<Epic> expectedEpicList = List.of(new Epic(2, "Epic2 name", Status.DONE, "Epic2 description",
-                Instant.parse("2023-01-01T13:00:00.000Z"), Duration.ofDays(31).toMinutes(), List.of(4)));
+        Epic expectedEpic = new Epic(2, "Epic2 name", Status.DONE, "Epic2 description",
+                Instant.parse("2023-01-01T13:00:00.000Z"), Duration.ofDays(31).toMinutes());
+        expectedEpic.addSubtaskId(4);
+
+        List<Epic> expectedEpicList = List.of(expectedEpic);
         List<Epic> actualEpicList = taskManager.getAllEpics();
-        assertEquals(expectedEpicList, actualEpicList,
-                "Deleted not 1 epic or characteristics not changed or getAllEpics returned not correct data");
+        assertEquals(expectedEpicList, actualEpicList, "Deleted not 1 epic or characteristics not changed " +
+                "or getAllEpics returned not correct data or addSubtaskId works wrongly");
+
 
         List<Subtask> expectedSubtasks = List.of(
                 new Subtask(4, "Subtask name2", Status.DONE, "Subtask description2",
@@ -601,11 +634,16 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         taskManager.deleteAllSubtasks();
 
         List<Epic> expectedEpicList = List.of(
-                new Epic(2, "Epic1 name", Status.NEW, "Epic1 description", null, 0, List.of()),
-                new Epic(3, "Epic2 name", Status.NEW, "Epic2 description", null, 0,  List.of())
+                new Epic(2, "Epic1 name", Status.NEW, "Epic1 description", null, 0),
+                new Epic(3, "Epic2 name", Status.NEW, "Epic2 description", null, 0)
         );
         List<Epic> actualEpicList = taskManager.getAllEpics();
         assertEquals(expectedEpicList, actualEpicList, "Epic's characteristics not update");
+
+        assertEquals(List.of(), taskManager.getEpicById(2).getSubtasksIdList(), "SubtasksIdList not updated or " +
+                "method return wrong");
+        assertEquals(List.of(), taskManager.getEpicById(3).getSubtasksIdList(), "SubtasksIdList not updated or " +
+                "method return wrong");
 
         List<Subtask> expectedSubtaskList = List.of();
         List<Subtask> actualSubtaskList = taskManager.getAllSubtasks();

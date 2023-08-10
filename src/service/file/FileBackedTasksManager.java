@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
     private final Path path;
@@ -184,7 +183,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
 
         for (Epic epic : taskManager.getAllEpics()) {
-            taskManager.getEpicEndTime(epic.getId());
+            taskManager.calcEpicEndTime(epic);
         }
 
         int historyLineNumber = emptyLineIndex + 1;
@@ -202,17 +201,5 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
         taskManager.setTaskCounter(maxId);
         return taskManager;
-    }
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FileBackedTasksManager that = (FileBackedTasksManager) o;
-        return Objects.equals(tasksMap, that.tasksMap) && Objects.equals(subtasksMap, that.subtasksMap) && Objects.equals(epicsMap, that.epicsMap) && Objects.equals(historyManager, that.historyManager);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(tasksMap, subtasksMap, epicsMap, historyManager);
     }
 }
