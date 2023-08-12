@@ -89,12 +89,11 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void createTask(Task thatTask) {
+    public Task createTask(Task thatTask) {
         thatTask.setId(getNewId());
         if (isTimeIntersection(thatTask)) {
             System.out.println("Task is not created - execution time cannot coincide with other tasks");
-            taskCounter--;
-            return;
+            return thatTask;
         }
 
 
@@ -108,19 +107,20 @@ public class InMemoryTaskManager implements TaskManager {
         );
         tasksMap.put(thisTask.getId(), thisTask);
         prioritizedTasksSet.add(thisTask);
+        return thisTask;
     }
 
     @Override
-    public void updateTask(Task thatTask) {
+    public Task updateTask(Task thatTask) {
         Task thisTask = tasksMap.get(thatTask.getId());
         if (thisTask == null) {
             System.out.println("Error in updateTask - given task id is not in tasksMap keys");
-            return;
+            return thisTask;
         }
 
         if (isTimeIntersection(thatTask)) {
             System.out.println("Task is not created - execution time cannot coincide with other tasks");
-            return;
+            return thisTask;
         }
         prioritizedTasksSet.remove(thisTask);
         thisTask.setName(thatTask.getName());
@@ -130,21 +130,21 @@ public class InMemoryTaskManager implements TaskManager {
         thisTask.setDurationInMinutes(thatTask.getDurationInMinutes());
         tasksMap.put(thisTask.getId(), thisTask);
         prioritizedTasksSet.add(thisTask);
+        return thisTask;
     }
 
     @Override
-    public void createSubtask(Subtask thatSubtask) {
+    public Subtask createSubtask(Subtask thatSubtask) {
         int epicId = thatSubtask.getEpicId();
         Epic commonEpic = epicsMap.get(epicId);
         if (commonEpic == null) {
             System.out.println("Error in createSubtask - Epic is not found by Epic ID. Subtask did't created.");
-            return;
+            return thatSubtask;
         }
         thatSubtask.setId(getNewId());
         if (isTimeIntersection(thatSubtask)) {
             System.out.println("Subtask is not created - execution time cannot coincide with other subtasks");
-            taskCounter--;
-            return;
+            return thatSubtask;
         }
 
         Subtask thisSubtask = new Subtask(
@@ -162,14 +162,15 @@ public class InMemoryTaskManager implements TaskManager {
         commonEpic.addSubtaskId(thisSubtask.getId());
         updateEpicStatus(epicId);
         calcEpicEndTime(commonEpic);
+        return thisSubtask;
     }
 
     @Override
-    public void updateSubtask(Subtask thatSubtask) {
+    public Subtask updateSubtask(Subtask thatSubtask) {
         Subtask thisSubtask = subtasksMap.get(thatSubtask.getId());
         if (thisSubtask == null) {
             System.out.println("Error in updateSubtask - subtask is not found by subtask ID. Subtask didn't updated.");
-            return;
+            return thisSubtask;
         }
 
         int thisSubtaskId = thisSubtask.getId();
@@ -177,12 +178,12 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epicOfThatSubtask = epicsMap.get(thatSubtaskEpicId);
         if (epicOfThatSubtask == null) {
             System.out.println("Error in updateSubtask - Epic is not found by Subtask's Epic ID. Subtask didn't updated.");
-            return;
+            return thisSubtask;
         }
 
         if (isTimeIntersection(thatSubtask)) {
             System.out.println("Subtask is not created - execution time cannot coincide with other subtasks");
-            return;
+            return thisSubtask;
         }
 
         int thisSubtaskEpicId = thisSubtask.getEpicId();
@@ -205,10 +206,11 @@ public class InMemoryTaskManager implements TaskManager {
         epicOfThatSubtask.addSubtaskId(thisSubtaskId);
         updateEpicStatus(thatSubtaskEpicId);
         calcEpicEndTime(epicOfThatSubtask);
+        return thisSubtask;
     }
 
     @Override
-    public void createEpic(Epic thatEpic) {
+    public Epic createEpic(Epic thatEpic) {
         thatEpic.setId(getNewId());
         Epic thisEpic = new Epic(
                 thatEpic.getId(),
@@ -216,20 +218,22 @@ public class InMemoryTaskManager implements TaskManager {
                 thatEpic.getDescription()
         );
         epicsMap.put(thisEpic.getId(), thisEpic);
+        return thisEpic;
     }
 
     @Override
-    public void updateEpic(Epic thatEpic) {
+    public Epic updateEpic(Epic thatEpic) {
         int comonId = thatEpic.getId();
         Epic thisEpic = epicsMap.get(comonId);
         if (thisEpic == null) {
-            return;
+            return thisEpic;
         }
         thisEpic.setName(thatEpic.getName());
         thisEpic.setDescription(thatEpic.getDescription());
         epicsMap.put(comonId, thisEpic);
         updateEpicStatus(comonId);
         calcEpicEndTime(thisEpic);
+        return thisEpic;
     }
 
     protected void updateEpicStatus(int epicId) {

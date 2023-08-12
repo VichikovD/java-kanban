@@ -1,6 +1,5 @@
 package service;
 
-import java.util.HashMap;
 import java.util.List;
 
 import model.Task;
@@ -10,17 +9,17 @@ import model.Subtask;
 public interface TaskManager {
     public List<Task> getHistory();
 
-    public void createTask(Task task);
+    public Task createTask(Task task);
 
-    public void updateTask(Task task);
+    public Task updateTask(Task task);
 
-    public void createSubtask(Subtask thatSubtask);
+    public Subtask createSubtask(Subtask thatSubtask);
 
-    public void updateSubtask(Subtask thatSubtask);
+    public Subtask updateSubtask(Subtask thatSubtask);
 
-    public void createEpic(Epic thatEpic);
+    public Epic createEpic(Epic thatEpic);
 
-    public void updateEpic(Epic thatEpic);
+    public Epic updateEpic(Epic thatEpic);
 
     public List<Subtask> getSubtasksListByEpicId(int epicId);
 

@@ -69,15 +69,12 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
 
     @Test
     public void savingThreeTasksAndHistory() {
-        Task madeTask1 = new Task(1, "T1", Status.NEW, "Description T1");
-        taskManager.createTask(madeTask1);
+        Task madeTask1 = taskManager.createTask(new Task(1, "T1", Status.NEW, "Description T1"));
 
-        Epic madeEpic2 = new Epic(2, "E2", "Description E2");
-        taskManager.createEpic(madeEpic2);
+        Epic madeEpic2 = taskManager.createEpic(new Epic(2, "E2", "Description E2"));
 
-        Subtask madeSubtask1 = new Subtask(3, "S1", Status.DONE, "Description S1",
-                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2);
-        taskManager.createSubtask(madeSubtask1);
+        Subtask madeSubtask1 = taskManager.createSubtask(new Subtask(3, "S1", Status.DONE, "Description S1",
+                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2));
 
         taskManager.getSubtaskById(3);
         taskManager.getTaskById(1);
@@ -101,16 +98,13 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
 
     @Test
     public void saving3TasksWithoutHistory() {
-        Task madeTask1 = new Task(1, "T1", Status.NEW, "Description T1",Instant.parse("2023-03-01T00:00:00.000Z"),
-                Duration.ofDays(31).toMinutes());
-        taskManager.createTask(madeTask1);
+        Task madeTask1 = taskManager.createTask(new Task(1, "T1", Status.NEW, "Description T1",
+                Instant.parse("2023-03-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes()));
 
-        Epic madeEpic2 = new Epic(2, "E2", "Description E2");
-        taskManager.createEpic(madeEpic2);
+        Epic madeEpic2 = taskManager.createEpic(new Epic(2, "E2", "Description E2"));
 
-        Subtask madeSubtask1 = new Subtask(3, "S1", Status.DONE, "Description S1",
-                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2);
-        taskManager.createSubtask(madeSubtask1);
+        Subtask madeSubtask1 = taskManager.createSubtask(new Subtask(3, "S1", Status.DONE, "Description S1",
+                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2));
 
         String lSeparator = System.lineSeparator();
         String expectedToBeSaved = "id,type,name,status,description,epic,startTime,durationInMinutes" + lSeparator
@@ -130,8 +124,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
 
     @Test
     public void savingEpicWithoutSubtasks() {
-        Epic madeEpic2 = new Epic(1, "E1", "Description E1");
-        taskManager.createEpic(madeEpic2);
+        Epic madeEpic2 = taskManager.createEpic(new Epic(1, "E1", "Description E1"));
 
         String lSeparator = System.lineSeparator();
         String expectedToBeSaved = "id,type,name,status,description,epic,startTime,durationInMinutes" + lSeparator
@@ -149,7 +142,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
 
     @Test
     public void loadEpicWithoutSubtasks() {
-        taskManager.createEpic(new Epic(1, "E1", Status.NEW, "Description E1",null, 0));
+        taskManager.createEpic(new Epic(2, "E1", Status.NEW, "Description E1",null, 0));
 
         FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.loadFromFile("TestFile.csv");
 
@@ -170,15 +163,12 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
 
     @Test
     public void load3TasksWithoutHistory() {
-        Task madeTask1 = new Task(1, "T1", Status.NEW, "Description T1");
-        taskManager.createTask(madeTask1);
+        Task madeTask1 = taskManager.createTask(new Task(1, "T1", Status.NEW, "Description T1"));
 
-        Epic madeEpic2 = new Epic(2, "E2", "Description E2");
-        taskManager.createEpic(madeEpic2);
+        Epic madeEpic2 = taskManager.createEpic(new Epic(2, "E2", "Description E2"));
 
-        Subtask madeSubtask1 = new Subtask(3, "S1", Status.DONE, "Description S1",
-                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2);
-        taskManager.createSubtask(madeSubtask1);
+        Subtask madeSubtask1 = taskManager.createSubtask(new Subtask(3, "S1", Status.DONE, "Description S1",
+                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2));
 
         FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.loadFromFile("TestFile.csv");
 
@@ -206,15 +196,12 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
 
     @Test
     public void load3TasksWithHistory() {
-        Task madeTask1 = new Task(1, "T1", Status.NEW, "Description T1");
-        taskManager.createTask(madeTask1);
+        Task madeTask1 = taskManager.createTask(new Task(1, "T1", Status.NEW, "Description T1"));
 
-        Epic madeEpic2 = new Epic(2, "E2", "Description E2");
-        taskManager.createEpic(madeEpic2);
+        Epic madeEpic2 = taskManager.createEpic(new Epic(2, "E2", "Description E2"));
 
-        Subtask madeSubtask1 = new Subtask(3, "S1", Status.DONE, "Description S1",
-                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2);
-        taskManager.createSubtask(madeSubtask1);
+        Subtask madeSubtask1 = taskManager.createSubtask(new Subtask(3, "S1", Status.DONE, "Description S1",
+                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2));
 
         taskManager.getSubtaskById(3);
         taskManager.getTaskById(1);
