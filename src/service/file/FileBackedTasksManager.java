@@ -14,52 +14,61 @@ import java.util.List;
 import java.util.Map;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
-    private final Path path;
+    private Path path = null;
 
     public FileBackedTasksManager(String path) {
         this.path = Paths.get(path);
+    }
+    public FileBackedTasksManager() {
+
     }
 
     @Override
     public Task createTask(Task thatTask) {
         super.createTask(thatTask);
         save();
-        return thatTask;
+        int id = thatTask.getId();
+        return tasksMap.get(id);
     }
 
     @Override
     public Task updateTask(Task thatTask) {
         super.updateTask(thatTask);
         save();
-        return thatTask;
+        int id = thatTask.getId();
+        return tasksMap.get(id);
     }
 
     @Override
     public Subtask createSubtask(Subtask thatSubtask) {
         super.createSubtask(thatSubtask);
         save();
-        return thatSubtask;
+        int id = thatSubtask.getId();
+        return subtasksMap.get(id);
     }
 
     @Override
     public Subtask updateSubtask(Subtask thatSubtask) {
         super.updateSubtask(thatSubtask);
         save();
-        return thatSubtask;
+        int id = thatSubtask.getId();
+        return subtasksMap.get(id);
     }
 
     @Override
     public Epic createEpic(Epic thatEpic) {
         super.createEpic(thatEpic);
         save();
-        return thatEpic;
+        int id = thatEpic.getId();
+        return epicsMap.get(id);
     }
 
     @Override
     public Epic updateEpic(Epic thatEpic) {
         super.updateEpic(thatEpic);
         save();
-        return thatEpic;
+        int id = thatEpic.getId();
+        return epicsMap.get(id);
     }
 
     @Override
@@ -139,7 +148,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    public static FileBackedTasksManager loadFromFile(String path) {
+    public static FileBackedTasksManager load(String path) {
         FileBackedTasksManager taskManager = new FileBackedTasksManager(path);
         List<String> linesFromFile;
         try {

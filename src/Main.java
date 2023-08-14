@@ -1,16 +1,29 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import model.Epic;
 import model.Subtask;
 import model.Task;
 import service.TaskManager;
 import model.Status;
 import service.file.FileBackedTasksManager;
+import service.server.HttpTaskManager;
+import service.server.InstantAdapter;
+import service.server.KVServer;
 import util.Managers;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        KVServer kvServer = new KVServer();
+        kvServer.start();
+        Gson gson = new GsonBuilder()
+                .serializeNulls()
+                .registerTypeAdapter(Instant.class, new InstantAdapter())
+                .setPrettyPrinting()
+                .create();
 
         TaskManager manager1 = Managers.getDefaults();
 
@@ -24,17 +37,21 @@ public class Main {
         task1.setName("T1");
         task1.setStatus(Status.NEW);
         task1.setDescription("Description T1");
-        task1.setStartTime(null);
-        task1.setDurationInMinutes(0);
+        task1.setStartTime(Instant.parse("2023-01-01T00:00:00.000Z"));
+        task1.setDurationInMinutes(Duration.ofDays(31).toMinutes());
         manager1.createTask(task1);
 
         Task task2 = new Task();
         task2.setName("T2");
         task2.setStatus(Status.DONE);
         task2.setDescription("Description T2");
-        task2.setStartTime(null);
+        task2.setStartTime(Instant.parse("2023-01-01T00:00:00.000Z"));
         task2.setDurationInMinutes(0);
-        manager1.createTask(task2);
+        try {
+            manager1.createTask(task2);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
 
         Epic epic1 = new Epic();
         epic1.setName("E1");
@@ -51,16 +68,22 @@ public class Main {
         subTask1.setStartTime(Instant.parse("2023-01-01T00:00:00.000Z"));
         subTask1.setDurationInMinutes(Duration.ofDays(31).toMinutes());
         subTask1.setEpicId(3);
-        manager1.createSubtask(subTask1);
+        try {
+            manager1.createSubtask(subTask1);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
 
         manager1.getSubtaskById(4);
 
-        TaskManager manager2 = FileBackedTasksManager.loadFromFile("AutoSave.csv");
+        HttpTaskManager manager2 = (HttpTaskManager) Managers.getDefaults();
+        manager2.resetAndLoadFromKVServer();
 
         System.out.println("Task maps are identical: " + manager1.getAllTasks().equals(manager2.getAllTasks()));
         System.out.println("Subtask maps are identical: " + manager1.getAllSubtasks().equals(manager2.getAllSubtasks()));
         System.out.println("Epic maps are identical: " + manager1.getAllEpics().equals(manager2.getAllEpics()));
         System.out.println("Histories are identical: " + manager1.getHistory().equals(manager2.getHistory()));
+        System.out.println("Prioritized are identical: " + manager1.getPrioritizedTasks().equals(manager2.getPrioritizedTasks()));
         System.out.println();
 
         System.out.println(manager1.getAllTasks());
@@ -132,22 +155,27 @@ public class Main {
         System.out.println(manager1.getHistory());
         System.out.println("");
 
-        manager2 = FileBackedTasksManager.loadFromFile("AutoSave.csv");
+        manager2.resetAndLoadFromKVServer();
 
         subTask2.setEpicId(6);
-        manager1.updateSubtask(subTask2);
-
+        try {
+            manager1.updateSubtask(subTask2);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
         System.out.println(manager2.getAllTasks());
         System.out.println(manager2.getAllSubtasks());
         System.out.println(manager2.getAllEpics());
+        System.out.println(manager2.getPrioritizedTasks());
         System.out.println();
 
-        manager2 = FileBackedTasksManager.loadFromFile("AutoSave.csv");
+        manager2.resetAndLoadFromKVServer();
 
         System.out.println("Task maps are identical :" + manager1.getAllTasks().equals(manager2.getAllTasks()));
         System.out.println("Subtask maps are identical :" + manager1.getAllSubtasks().equals(manager2.getAllSubtasks()));
         System.out.println("Epic maps are identical :" + manager1.getAllEpics().equals(manager2.getAllEpics()));
         System.out.println("Histories are identical: " + manager1.getHistory().equals(manager2.getHistory()));
-
+        System.out.println("Prioritized are identical: " + manager1.getPrioritizedTasks().equals(manager2.getPrioritizedTasks()));
+        kvServer.stop();
     }
 }

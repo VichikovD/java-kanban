@@ -56,6 +56,22 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(prioritizedTasksSet);
     }
 
+    @Override
+    public boolean containsTask(int id) {
+        return tasksMap.containsKey(id);
+    }
+
+    @Override
+    public boolean containsSubtask(int id) {
+        return subtasksMap.containsKey(id);
+    }
+
+    @Override
+    public boolean containsEpic(int id) {
+        return epicsMap.containsKey(id);
+
+    }
+
     public static class StartTimeComparator implements Comparator<Task> {
 
         @Override
@@ -90,10 +106,12 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task createTask(Task thatTask) {
+        if (thatTask == null) {
+            return thatTask;
+        }
         thatTask.setId(getNewId());
         if (isTimeIntersection(thatTask)) {
-            System.out.println("Task is not created - execution time cannot coincide with other tasks");
-            return thatTask;
+            throw new IllegalArgumentException("Task is not created - execution time cannot coincide with other tasks");
         }
 
 
@@ -119,8 +137,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
 
         if (isTimeIntersection(thatTask)) {
-            System.out.println("Task is not created - execution time cannot coincide with other tasks");
-            return thisTask;
+            throw new IllegalArgumentException("Task is not created - execution time cannot coincide with other tasks");
         }
         prioritizedTasksSet.remove(thisTask);
         thisTask.setName(thatTask.getName());
@@ -138,13 +155,11 @@ public class InMemoryTaskManager implements TaskManager {
         int epicId = thatSubtask.getEpicId();
         Epic commonEpic = epicsMap.get(epicId);
         if (commonEpic == null) {
-            System.out.println("Error in createSubtask - Epic is not found by Epic ID. Subtask did't created.");
-            return thatSubtask;
+            throw new IllegalArgumentException("Error in createSubtask - Epic is not found by Epic ID. Subtask did't created.");
         }
         thatSubtask.setId(getNewId());
         if (isTimeIntersection(thatSubtask)) {
-            System.out.println("Subtask is not created - execution time cannot coincide with other subtasks");
-            return thatSubtask;
+            throw new IllegalArgumentException("Task is not created - execution time cannot coincide with other tasks");
         }
 
         Subtask thisSubtask = new Subtask(
@@ -169,21 +184,18 @@ public class InMemoryTaskManager implements TaskManager {
     public Subtask updateSubtask(Subtask thatSubtask) {
         Subtask thisSubtask = subtasksMap.get(thatSubtask.getId());
         if (thisSubtask == null) {
-            System.out.println("Error in updateSubtask - subtask is not found by subtask ID. Subtask didn't updated.");
-            return thisSubtask;
+            throw new IllegalArgumentException("Error in updateSubtask - subtask is not found by subtask ID. Subtask didn't updated.");
         }
 
         int thisSubtaskId = thisSubtask.getId();
         int thatSubtaskEpicId = thatSubtask.getEpicId();
         Epic epicOfThatSubtask = epicsMap.get(thatSubtaskEpicId);
         if (epicOfThatSubtask == null) {
-            System.out.println("Error in updateSubtask - Epic is not found by Subtask's Epic ID. Subtask didn't updated.");
-            return thisSubtask;
+            throw new IllegalArgumentException("Error in updateSubtask - Epic is not found by Subtask's Epic ID. Subtask didn't updated.");
         }
 
         if (isTimeIntersection(thatSubtask)) {
-            System.out.println("Subtask is not created - execution time cannot coincide with other subtasks");
-            return thisSubtask;
+            throw new IllegalArgumentException("Task is not created - execution time cannot coincide with other tasks");
         }
 
         int thisSubtaskEpicId = thisSubtask.getEpicId();
@@ -226,7 +238,7 @@ public class InMemoryTaskManager implements TaskManager {
         int comonId = thatEpic.getId();
         Epic thisEpic = epicsMap.get(comonId);
         if (thisEpic == null) {
-            return thisEpic;
+            throw new IllegalArgumentException("Error in updateEpic - epic is not found by subtask ID. Subtask didn't updated.");
         }
         thisEpic.setName(thatEpic.getName());
         thisEpic.setDescription(thatEpic.getDescription());
@@ -239,8 +251,7 @@ public class InMemoryTaskManager implements TaskManager {
     protected void updateEpicStatus(int epicId) {
         Epic thisEpic = epicsMap.get(epicId);
         if (thisEpic == null) {
-            System.out.println("Error in updateEpicStatus - epic ID is not found");
-            return;
+            throw  new IllegalArgumentException("Error in updateEpicStatus - epic ID is not found");
         }
         ArrayList<Integer> subtasksIdList = new ArrayList<>(thisEpic.getSubtasksIdList());
         int statusQuantityCounter = 0;
@@ -322,7 +333,7 @@ public class InMemoryTaskManager implements TaskManager {
         Epic thisEpic = epicsMap.get(epicId);
         ArrayList<Subtask> subtasksList = new ArrayList<>();
         if (thisEpic == null) {
-            return subtasksList;
+            throw new IllegalArgumentException("Error in getSubtasksListById - epic is not found by subtask ID.");
         }
 
         List<Integer> subtasksIdList = thisEpic.getSubtasksIdList();
@@ -382,8 +393,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteTaskById(int taskId) {
         prioritizedTasksSet.remove(tasksMap.get(taskId));
         if (tasksMap.remove(taskId) == null) {
-            System.out.println("Can't delete. No matches with id: " + taskId);
-            return;
+            throw new IllegalArgumentException("Can't delete. No matches with id: " + taskId);
         }
         historyManager.remove(taskId);
     }
@@ -392,8 +402,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteSubtaskById(int subtaskId) {
         Subtask subtask = subtasksMap.remove(subtaskId);
         if (subtask == null) {
-            System.out.println("Can't delete. No matches with id: " + subtaskId);
-            return;
+            throw new IllegalArgumentException("Can't delete. No matches with id: " + subtaskId);
         }
         prioritizedTasksSet.remove(subtask);
         int epicIdOfSubtask = subtask.getEpicId();
@@ -409,8 +418,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteEpicById(int epicId) {
         Epic epic = epicsMap.remove(epicId);
         if (epic == null) {
-            System.out.println("Can't delete. No matches with id: " + epicId);
-            return;
+            throw new IllegalArgumentException("Can't delete. No matches with id: " + epicId);
         }
         prioritizedTasksSet.remove(epic);
         List<Integer> subtasksIdList = epic.getSubtasksIdList();

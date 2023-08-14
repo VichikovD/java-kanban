@@ -3,6 +3,7 @@ package util;
 import service.*;
 import service.file.FileBackedTasksManager;
 import service.mem.InMemoryHistoryManager;
+import service.server.HttpTaskManager;
 
 public class Managers {
     private Managers() {
@@ -14,7 +15,7 @@ public class Managers {
     }
 
     public static TaskManager getDefaults() {
-        TaskManager taskManager = new FileBackedTasksManager("AutoSave.csv");
+        TaskManager taskManager = new HttpTaskManager();
         return taskManager;
     }
 

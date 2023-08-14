@@ -2,38 +2,23 @@ package service;
 
 import model.*;
 import service.file.FileBackedTasksManager;
-import service.mem.InMemoryTaskManager;
-import service.file.exception.ManagerLoadException;
-import service.file.exception.ManagerSaveException;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import service.TaskManagerTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.*;
-import service.file.exception.ManagerSaveException;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager> {
 
     @Override
     public FileBackedTasksManager beforeEach() {
         String path = "TestFile.csv";
-
         return new FileBackedTasksManager(path);
     }
 
@@ -144,7 +129,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
     public void loadEpicWithoutSubtasks() {
         taskManager.createEpic(new Epic(2, "E1", Status.NEW, "Description E1",null, 0));
 
-        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.loadFromFile("TestFile.csv");
+        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("TestFile.csv");
 
         List<Task> expectedTasksMap = List.of();
         List<Subtask> expectedSubtasksMap = List.of();
@@ -170,7 +155,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
         Subtask madeSubtask1 = taskManager.createSubtask(new Subtask(3, "S1", Status.DONE, "Description S1",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2));
 
-        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.loadFromFile("TestFile.csv");
+        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("TestFile.csv");
 
         Epic expectedEpic = new Epic(2, "E2",Status.DONE, "Description E2",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes());
@@ -206,7 +191,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
         taskManager.getSubtaskById(3);
         taskManager.getTaskById(1);
 
-        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.loadFromFile("TestFile.csv");
+        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("TestFile.csv");
 
         Epic expectedEpic = new Epic(2, "E2",Status.DONE, "Description E2",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes());

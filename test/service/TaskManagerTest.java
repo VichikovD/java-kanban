@@ -37,8 +37,12 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
         Subtask madeSubtask1 = taskManager.createSubtask(new Subtask(3, "Subtask1 name", Status.DONE,
                 "Subtask1 description", Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 1));
-        Subtask madeSubtask = taskManager.createSubtask(new Subtask(4, "Subtask2 name", Status.DONE,
-                "Subtask2 description", Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 1));
+        Subtask madeSubtask = new Subtask(4, "Subtask2 name", Status.DONE,
+                "Subtask2 description", Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 1);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> taskManager.createTask(madeSubtask),
+                "Exception is not thrown when task start-time coincide");
 
         List<Task> expectedList = List.of(
                 new Subtask(2, "Subtask1 name", Status.DONE, "Subtask1 description",
@@ -61,8 +65,12 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         Task madeTask1 = taskManager.createTask(new Task(1, "name", Status.NEW, "description",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes()));
 
-        Task madeTask2 = taskManager.createTask(new Task(2, "name", Status.NEW, "description",
-                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes()));
+        Task madeTask2 = new Task(2, "name", Status.NEW, "description",
+                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> taskManager.createTask(madeTask2),
+                "Exception is not thrown when task start-time coincide");
 
         List<Task> expectedTasks = List.of(new Task(1, "name", Status.NEW, "description",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes()));
