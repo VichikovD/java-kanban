@@ -14,10 +14,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 abstract public class TaskManagerTest<T extends TaskManager> {
-    public T taskManager = beforeEach();
+    public T taskManager;
 
     @BeforeEach
-    abstract public T beforeEach();
+    public void beforeEach() {
+        taskManager = getTaskManager();
+    }
+
+    abstract public T getTaskManager();
 
     @Test
     public void getPrioritized1ShouldReturn2NullTimeTasks() {
@@ -78,24 +82,6 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(expectedTasks, actualTasks, "Not 1 task created or getTaskById didn't return correct Task");
     }
 
-    //  Предполагаю, что проверку тасков на null поля стоило бы иметь, если мы нe считали, что нам подаются правильные
-    //  таски, как это было описано в ранних ТЗ. Тесты, выбрасываний исключений не проходят по изначальной логике
-    /*@Test
-    public void createTask2ShouldThrowException() {
-        Task madeTask = new Task(null, null, null, null);
-        assertThrows(IllegalArgumentException.class,
-                () -> taskManager.createTask(madeTask),
-                "Exception is not thrown when task fields are not filled up");
-    }
-
-    @Test
-    public void createTask3ShouldThrowException() {
-        Task madeTask = null;
-        assertThrows(IllegalArgumentException.class,
-                () -> taskManager.createTask(madeTask),
-                "Exception is not thrown when task is null");
-    }*/
-
     @Test
     public void updateTask1ShouldUpdateTaskInTasksMap() {
         Task madeTask = taskManager.createTask(new Task(1, "name", Status.NEW, "description"));
@@ -121,30 +107,6 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(expectedTask, updatedTask, "Task not updated correctly or getTaskById didn't return correct Task");
     }
 
-
-    //  Предполагаю, что проверку тасков на null поля стоило бы иметь, если мы нe считали, что нам подаются корректные
-    //  таски, как это было, кажется, описано в ранних ТЗ. 2 нижних теста не проходят по изначальной логике
- /*
-    @Test
-    public void updateTask2ShouldThrowException() {
-        Task madeTask = taskManager.createTask(new Task(1, "name", Status.NEW, "description",
-                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes()));
-        Task madeTask = new Task(null, null, null, null);
-        assertThrows(IllegalArgumentException.class,
-                () -> taskManager.updateTask(madeTask),
-                "Exception is not thrown when task fields are not filled up");
-    }
-
-    @Test
-    public void updateTask3ShouldThrowException() {
-        Task madeTask = taskManager.createTask(new Task(1, "name", Status.NEW, "description",
-                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes()));
-        Task madeTask = null;
-        assertThrows(IllegalArgumentException.class,
-                () -> taskManager.updateTask(madeTask),
-                "Exception is not thrown when task is null");
-    }*/
-
     @Test
     public void createSubtask1ShouldAddSubtaskToSubtasksMapAndAddToEpicSubtaskList() {
         Epic madeEpic1 = taskManager.createEpic(new Epic(1, "Epic1 name", "Epic1 description"));
@@ -169,7 +131,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(List.of(3), actualEpic.getSubtasksIdList(), "SubtasksIdList not updated or method return wrong");
     }
 
-    /*@Test
+    @Test
     public void createSubtask2ThrowException() {
         Subtask madeSubtask = new Subtask(4, "Subtask name", Status.NEW, "Subtask description", null, 0, 1);
         assertThrows(IllegalArgumentException.class,
@@ -177,16 +139,6 @@ abstract public class TaskManagerTest<T extends TaskManager> {
                 "Exception is not thrown when there is no created Epic mentioned in subtask's epicId");
     }
 
-    @Test
-    public void createSubtask3ThrowException() {
-        Epic madeEpic = new Epic(1, "Epic name", "Epic description");
-        taskManager.createEpic(madeEpic);
-
-        Subtask madeSubtask = new Subtask(null, null, null, null, null);
-        assertThrows(IllegalArgumentException.class,
-                () -> taskManager.createSubtask(madeSubtask),
-                "Exception is not thrown when subtask fields are not filled up");
-    }*/
 
     @Test
     public void updateSubtask1() {
@@ -229,7 +181,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     }
 
 
-    /*@Test
+    @Test
     public void updateSubtask2ShouldThrowExceptionDueToNotCorrectUpdatedEpicId() {
         Epic madeEpic = taskManager.createEpic(new Epic(1, "Epic nameUpd2", "Epic descriptionUpd2"));
 
@@ -242,7 +194,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
                 () -> taskManager.updateSubtask(updatedSubtask),
                 "Exception is not thrown when update subtask's epicId not in epicsMap");
     }
-*/
+
     @Test
     public void createEpic1ShouldCreateEpicAsPerRequirements() {
         Epic madeEpic = taskManager.createEpic(new Epic(2, "Epic2 name", Status.IN_PROGRESS, "Epic2 description",
@@ -288,7 +240,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(expectedList, actualList, "Subtask not updated correctly");
     }
 
-     /*@Test
+     @Test
     public void getSubtasksListByEpicId2() {
         Epic madeEpic1 = taskManager.createEpic(new Epic(1, "Epic1 name", "Epic1 description"));
 
@@ -297,7 +249,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> taskManager.getSubtasksListByEpicId(2));
-    }*/
+    }
 
     @Test
     public void getAllTasks() {
@@ -427,14 +379,14 @@ abstract public class TaskManagerTest<T extends TaskManager> {
                 "Not correctly deleted from prioritized or getAllTasks returned not correct data");
     }
 
-    /*@Test
+    @Test
     public void deleteTaskById2ShouldThrowException() {
         Task madeTask = taskManager.createTask(new Task(1, "name1", Status.NEW, "description1"));
 
         assertThrows(
                 IllegalArgumentException.class,
                 () -> taskManager.deleteTaskById(2));
-    }*/
+    }
 
     @Test
     public void deleteSubtaskByIdShouldDelete1SubtaskAndUpdatePrioritizedTasksAndUpdateEpic() {
@@ -469,16 +421,17 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     }
 
-    /*@Test
+    @Test
     public void deleteSubtaskById2ShouldThrowException() {
-        Epic madeEpic = askManager.createEpic(new Epic(1, "Epic name", Status.NEW, "Epic description"));
+        Epic madeEpic = taskManager.createEpic(new Epic(1, "Epic name", "Epic description"));
 
-        Subtask madeSubtask1 = taskManager.createSubtask(new Subtask(2, "Subtask name1", Status.NEW, "Subtask description1", 1));
+        Subtask madeSubtask1 = taskManager.createSubtask(new Subtask(2, "Subtask name1", Status.NEW,
+                "Subtask description1",Instant.parse("2023-03-01T13:00:00.000Z"), Duration.ofDays(31).toMinutes(),  1));
 
         assertThrows(
                 IllegalArgumentException.class,
                 () -> taskManager.deleteSubtaskById(3));
-    }*/
+    }
 
 
     @Test
@@ -514,14 +467,14 @@ abstract public class TaskManagerTest<T extends TaskManager> {
                 "Not correctly deleted from prioritized or getPrioritizedTasks returned not correct data");
     }
 
-    /*@Test
+    @Test
     public void deleteEpicById2ShouldThrowException() {
-        Epic madeEpic1 = taskManager.createEpic(new Epic(1, "Epic name", Status.NEW, "Epic description"));
+        Epic madeEpic1 = taskManager.createEpic(new Epic(1, "Epic name", "Epic description"));
 
         assertThrows(
                 IllegalArgumentException.class,
                 () -> taskManager.deleteEpicById(3));
-    }*/
+    }
 
     @Test
     public void deleteAllEpics() {

@@ -1,6 +1,7 @@
-package service;
+package service.file;
 
 import model.*;
+import service.TaskManagerTest;
 import service.file.FileBackedTasksManager;
 
 import java.io.IOException;
@@ -17,8 +18,8 @@ import org.junit.jupiter.api.*;
 class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager> {
 
     @Override
-    public FileBackedTasksManager beforeEach() {
-        String path = "TestFile.csv";
+    public FileBackedTasksManager getTaskManager() {
+        String path = "test/TestFile.csv";
         return new FileBackedTasksManager(path);
     }
 
@@ -44,7 +45,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
         taskManager.save();
         String actuallySaved = null;
         try {
-            actuallySaved = Files.readString(Path.of("TestFile.csv"));
+            actuallySaved = Files.readString(Path.of("test/TestFile.csv"));
         } catch (IOException e) {
             System.out.println("'Saving' Test is not carried out.");
         }
@@ -73,7 +74,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
                 + "3,1";
         String actuallySaved = null;
         try {
-            actuallySaved = Files.readString(Path.of("TestFile.csv"));
+            actuallySaved = Files.readString(Path.of("test/TestFile.csv"));
         } catch (IOException e) {
             System.out.println("'Saving' Test is not carried out.");
         }
@@ -99,7 +100,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
                 + lSeparator;
         String actuallySaved = null;
         try {
-            actuallySaved = Files.readString(Path.of("TestFile.csv"));
+            actuallySaved = Files.readString(Path.of("test/TestFile.csv"));
         } catch (IOException e) {
             System.out.println("'Saving' Test is not carried out.");
         }
@@ -117,7 +118,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
                 + lSeparator;
         String actuallySaved = null;
         try {
-            actuallySaved = Files.readString(Path.of("TestFile.csv"));
+            actuallySaved = Files.readString(Path.of("test/TestFile.csv"));
         } catch (IOException e) {
             System.out.println("'Saving' Test is not carried out.");
         }
@@ -129,7 +130,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
     public void loadEpicWithoutSubtasks() {
         taskManager.createEpic(new Epic(2, "E1", Status.NEW, "Description E1",null, 0));
 
-        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("TestFile.csv");
+        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("test/TestFile.csv");
 
         List<Task> expectedTasksMap = List.of();
         List<Subtask> expectedSubtasksMap = List.of();
@@ -155,7 +156,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
         Subtask madeSubtask1 = taskManager.createSubtask(new Subtask(3, "S1", Status.DONE, "Description S1",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2));
 
-        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("TestFile.csv");
+        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("test/TestFile.csv");
 
         Epic expectedEpic = new Epic(2, "E2",Status.DONE, "Description E2",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes());
@@ -191,7 +192,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
         taskManager.getSubtaskById(3);
         taskManager.getTaskById(1);
 
-        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("TestFile.csv");
+        FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("test/TestFile.csv");
 
         Epic expectedEpic = new Epic(2, "E2",Status.DONE, "Description E2",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes());

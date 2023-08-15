@@ -107,7 +107,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task createTask(Task thatTask) {
         if (thatTask == null) {
-            return thatTask;
+            throw new IllegalArgumentException("Task and cannot be null");
         }
         thatTask.setId(getNewId());
         if (isTimeIntersection(thatTask)) {
@@ -391,10 +391,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteTaskById(int taskId) {
-        prioritizedTasksSet.remove(tasksMap.get(taskId));
-        if (tasksMap.remove(taskId) == null) {
+        Task task = tasksMap.get(taskId);
+        if (task == null) {
             throw new IllegalArgumentException("Can't delete. No matches with id: " + taskId);
         }
+
+        prioritizedTasksSet.remove(tasksMap.get(taskId));
+        tasksMap.remove(taskId);
         historyManager.remove(taskId);
     }
 

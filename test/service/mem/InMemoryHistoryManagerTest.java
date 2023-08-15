@@ -1,4 +1,4 @@
-package service;
+package service.mem;
 
 import model.Epic;
 import model.Status;
@@ -33,14 +33,16 @@ public class InMemoryHistoryManagerTest {
     @Test
     public void addAndGetHistorySameGoToTail() {
         Task madeTask1 = new Task(1, "name1", Status.NEW, "description1");
+        Epic madeEpic2 = new Epic(2, "Epic2 name", "Epic2 description");
+        List<Task> expectedHistory1 = List.of(new Task(1, "name1", Status.NEW, "description1", null, 0));
+
         taskManager.createTask(madeTask1);
         taskManager.getTaskById(1);
 
-        List<Task> expectedHistory1 = List.of(new Task(1, "name1", Status.NEW, "description1", null, 0));
         List<Task> actualHistory1 = taskManager.getHistory();
+
         assertEquals(expectedHistory1, actualHistory1, "Task not added to history or Not correct history returned");
 
-        Epic madeEpic2 = new Epic(2, "Epic2 name", "Epic2 description");
         taskManager.createEpic(madeEpic2);
         taskManager.getEpicById(2);
 
@@ -51,10 +53,12 @@ public class InMemoryHistoryManagerTest {
         assertEquals(expectedHistory2, actualHistory2, "Task not added to end of history or Not correct history returned");
 
         taskManager.getTaskById(1);
+
         List<Task> expectedHistory3 = List.of(
                 new Epic(2, "Epic2 name", Status.NEW, "Epic2 description", null, 0),
                 new Task(1, "name1", Status.NEW, "description1", null, 0));
         List<Task> actualHistory3 = taskManager.getHistory();
+
         assertEquals(expectedHistory3, actualHistory3, "Duplicated task not removed and added to end of history " +
                 "or Not correct history returned");
     }
@@ -62,15 +66,14 @@ public class InMemoryHistoryManagerTest {
     @Test
     public void removeFromTail() {
         Task madeTask1 = new Task(1, "name1", Status.NEW, "description1");
-        taskManager.createTask(madeTask1);
-        taskManager.getTaskById(1);
-
         Epic madeEpic1 = new Epic(2, "Epic2 name", "Epic2 description");
-        taskManager.createEpic(madeEpic1);
-        taskManager.getEpicById(2);
-
         Subtask madeSubtask1 = new Subtask(3, "Subtask name1", Status.DONE, "Subtask description1",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2);
+
+        taskManager.createTask(madeTask1);
+        taskManager.getTaskById(1);
+        taskManager.createEpic(madeEpic1);
+        taskManager.getEpicById(2);
         taskManager.createSubtask(madeSubtask1);
         taskManager.getSubtaskById(3);
 
@@ -87,22 +90,19 @@ public class InMemoryHistoryManagerTest {
     public void removeFromMid() {
         Task madeTask1 = new Task(1, "name1", Status.NEW, "description1", Instant.parse("2023-04-01T00:00:00.000Z"),
                 Duration.ofDays(31).toMinutes());
-        taskManager.createTask(madeTask1);
-        taskManager.getTaskById(1);
-
         Epic madeEpic1 = new Epic(2, "Epic2 name", "Epic2 description");
-        taskManager.createEpic(madeEpic1);
-        taskManager.getEpicById(2);
-
         Subtask madeSubtask1 = new Subtask(3, "Subtask name1", Status.DONE, "Subtask description1",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2);
+        Task madeTask2 = new Task(4, "name2", Status.NEW, "description2");
+
+        taskManager.createTask(madeTask1);
+        taskManager.getTaskById(1);
+        taskManager.createEpic(madeEpic1);
+        taskManager.getEpicById(2);
         taskManager.createSubtask(madeSubtask1);
         taskManager.getSubtaskById(3);
-
-        Task madeTask2 = new Task(4, "name2", Status.NEW, "description2");
         taskManager.createTask(madeTask2);
         taskManager.getTaskById(4);
-
         taskManager.deleteEpicById(2);
 
         List<Task> expectedHistory1 = List.of(
@@ -116,22 +116,19 @@ public class InMemoryHistoryManagerTest {
     @Test
     public void removeFromHead() {
         Task madeTask1 = new Task(1, "name1", Status.NEW, "description1");
-        taskManager.createTask(madeTask1);
-        taskManager.getTaskById(1);
-
         Epic madeEpic1 = new Epic(2, "Epic2 name", "Epic2 description");
-        taskManager.createEpic(madeEpic1);
-        taskManager.getEpicById(2);
-
         Subtask madeSubtask1 = new Subtask(3, "Subtask name1", Status.DONE, "Subtask description1",
                 Instant.parse("2023-04-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2);
-        taskManager.createSubtask(madeSubtask1);
-        taskManager.getSubtaskById(3);
-
-        taskManager.deleteTaskById(1);
-
         Epic expectedEpic = new Epic(2, "Epic2 name", Status.DONE, "Epic2 description", Instant.parse("2023-04-01T00:00:00.000Z"),
                 Duration.ofDays(31).toMinutes());
+
+        taskManager.createTask(madeTask1);
+        taskManager.getTaskById(1);
+        taskManager.createEpic(madeEpic1);
+        taskManager.getEpicById(2);
+        taskManager.createSubtask(madeSubtask1);
+        taskManager.getSubtaskById(3);
+        taskManager.deleteTaskById(1);
         expectedEpic.addSubtaskId(3);
 
         List<Task> expectedHistory1 = List.of(expectedEpic,

@@ -17,7 +17,7 @@ public class Epic extends Task {
         this.subtasksIdList = new ArrayList<>();
     }
 
-    public Epic(int id, String name, String description) {
+    public Epic(Integer id, String name, String description) {
         super(id, name, Status.NEW, description);
         this.tasksType = TasksType.EPIC;
         this.subtasksIdList = new ArrayList<>();

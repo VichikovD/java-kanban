@@ -5,6 +5,8 @@ import service.file.FileBackedTasksManager;
 import service.mem.InMemoryHistoryManager;
 import service.server.HttpTaskManager;
 
+import java.net.ConnectException;
+
 public class Managers {
     private Managers() {
     }
@@ -14,7 +16,7 @@ public class Managers {
         return historyManager;
     }
 
-    public static TaskManager getDefaults() {
+    public static TaskManager getDefaults() throws ConnectException {
         TaskManager taskManager = new HttpTaskManager();
         return taskManager;
     }
