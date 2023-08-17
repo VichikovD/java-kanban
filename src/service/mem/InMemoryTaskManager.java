@@ -430,7 +430,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteEpicById(int epicId) throws NotFoundException{
+    public void deleteEpicById(int epicId) throws NotFoundException {
         Epic epic = epicsMap.remove(epicId);
         if (epic == null) {
             throw new NotFoundException("Can't delete. No matches with id: " + epicId);

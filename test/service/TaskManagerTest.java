@@ -205,7 +205,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(expectedList, actualList, "Subtask not updated correctly");
     }
 
-     @Test
+    @Test
     public void getSubtasksListByEpicId2() {
         assertThrows(
                 NotFoundException.class,
@@ -303,7 +303,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(expectedEpic, actual, "Received not correct Task");
     }
 
-   @Test
+    @Test
     public void getEpicById2ShouldThrowException() {
         assertThrows(
                 NotFoundException.class,

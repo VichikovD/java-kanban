@@ -10,9 +10,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class KVTaskClient {
-    /*public static void main(String[] args) throws ConnectException {
+    public static void main(String[] args) throws ConnectException {
         KVTaskClient kvTaskClient = new KVTaskClient("http://localhost:8010/");
-    }*/
+    }
 
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     HttpClient client;

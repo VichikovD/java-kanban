@@ -50,6 +50,7 @@ public class Task {
         this.epicId = null;
         this.tasksType = TasksType.TASK;
     }
+
     public String getName() {
         return name;
     }
@@ -65,6 +66,7 @@ public class Task {
     public Status getStatus() {
         return status;
     }
+
     public Instant getStartTime() {
         return startTime;
     }
@@ -80,6 +82,7 @@ public class Task {
     public void setDurationInMinutes(long durationInMinutes) {
         this.durationInMinutes = durationInMinutes;
     }
+
     public Instant getEndTime() {
         Duration duration = Duration.ofMinutes(durationInMinutes);
         Instant endTime = startTime.plus(duration);

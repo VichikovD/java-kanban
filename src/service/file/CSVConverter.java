@@ -35,7 +35,7 @@ public class CSVConverter {
 
     public static String taskToString(Task task) {
         String result = String.format("%s,%s,%s,%s,%s,%s,%s,%s", task.getId(), task.getTasksType(),
-                task.getName(), task.getStatus(), task.getDescription(),task.getEpicId(), task.getStartTime(), task.getDurationInMinutes());
+                task.getName(), task.getStatus(), task.getDescription(), task.getEpicId(), task.getStartTime(), task.getDurationInMinutes());
         return result;
     }
 

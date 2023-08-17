@@ -46,8 +46,12 @@ public interface TaskManager {
     public void deleteAllSubtasks();
 
     public void deleteAllTasks();
+
     public List<Task> getPrioritizedTasks();
+
     public boolean containsTask(int id);
+
     public boolean containsSubtask(int id);
+
     public boolean containsEpic(int id);
 }

@@ -70,7 +70,7 @@ public class HttpTaskServerTest {
         URI url = URI.create(hostUrl + "task/");
         Task task1 = getStandardTask(CHOOSE_CREATE);
 
-        HttpResponse<String> response = SendRequestCreateRequestGetResponse(task1, url);
+        HttpResponse<String> response = sendRequestReturnResponse(task1, url);
 
         assertEquals(List.of(new Task(1, "name", Status.NEW, "description")), httpTaskServer.httpTaskManager.getAllTasks());
         assertEquals(200, response.statusCode());
@@ -80,7 +80,7 @@ public class HttpTaskServerTest {
     public void UpdateTask() throws IOException, InterruptedException {
         URI url = URI.create(hostUrl + "task/");
         Task task1 = getStandardTask(CHOOSE_CREATE);
-        HttpResponse<String> response1 = SendRequestCreateRequestGetResponse(task1, url);
+        HttpResponse<String> response1 = sendRequestReturnResponse(task1, url);
         Task taskUpdated = new Task(1, "New name", Status.DONE, "New description");
         HttpRequest.BodyPublisher bodyPublisherUpdate = HttpRequest.BodyPublishers.ofString(gson.toJson(taskUpdated), DEFAULT_CHARSET);
         HttpRequest requestUpdate = HttpRequest.newBuilder()
@@ -106,8 +106,8 @@ public class HttpTaskServerTest {
         expectedEpic.addSubtaskId(2);
         expectedEpic.setEndTime(Instant.parse("2023-05-01T00:00:00.000Z").plus(Duration.ofDays(31)));
 
-        HttpResponse<String> responseEpic = SendRequestCreateRequestGetResponse(epic, urlEpic);
-        HttpResponse<String> responseSubtask = SendRequestCreateRequestGetResponse(epic, urlEpic);
+        HttpResponse<String> responseEpic = sendRequestReturnResponse(epic, urlEpic);
+        HttpResponse<String> responseSubtask = sendRequestReturnResponse(subtask, urlSubtask);
 
         assertEquals(List.of(new Subtask(2, "name", Status.NEW, "description", Instant.parse("2023-05-01T00:00:00.000Z"),
                 Duration.ofDays(31).toMinutes(), 1)), httpTaskServer.httpTaskManager.getAllSubtasks());
@@ -134,8 +134,8 @@ public class HttpTaskServerTest {
         expectedEpic.addSubtaskId(2);
         expectedEpic.setEndTime(Instant.parse("2023-01-01T00:00:00.000Z").plus(Duration.ofDays(11)));
 
-        HttpResponse<String> responseEpic = SendRequestCreateRequestGetResponse(epic, urlEpic);
-        HttpResponse<String> responseSubtask = SendRequestCreateRequestGetResponse(subtask, urlSubtask);
+        HttpResponse<String> responseEpic = sendRequestReturnResponse(epic, urlEpic);
+        HttpResponse<String> responseSubtask = sendRequestReturnResponse(subtask, urlSubtask);
         HttpResponse<String> responseUpdateSubtask = client.send(requestUpdateSubtask, HttpResponse.BodyHandlers.ofString());
 
         assertEquals(List.of(updatedSubtask), httpTaskServer.httpTaskManager.getAllSubtasks());
@@ -149,7 +149,7 @@ public class HttpTaskServerTest {
     public void createAndUpdateEpic() throws IOException, InterruptedException {
         URI urlEpic = URI.create(hostUrl + "epic/");
         Epic epic = getStandardEpic(CHOOSE_CREATE);
-        HttpResponse<String> responseEpic = SendRequestCreateRequestGetResponse(epic, urlEpic);
+        HttpResponse<String> responseEpic = sendRequestReturnResponse(epic, urlEpic);
         Epic updatedEpic = new Epic(1, "new name", Status.DONE, "new description",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(11).toMinutes());
         HttpRequest.BodyPublisher bodyPublisherEpic = HttpRequest.BodyPublishers.ofString(gson.toJson(updatedEpic), DEFAULT_CHARSET);
@@ -175,7 +175,7 @@ public class HttpTaskServerTest {
                 .uri(urlCreate)
                 .POST(bodyPublisher)
                 .build();
-        HttpResponse<String> responseCreate = SendRequestCreateRequestGetResponse(task1, urlCreate);
+        HttpResponse<String> responseCreate = sendRequestReturnResponse(task1, urlCreate);
         URI urlGetTasks = URI.create(hostUrl + "task/");
         HttpRequest requestGetTasks = HttpRequest.newBuilder()
                 .uri(urlGetTasks)
@@ -185,7 +185,7 @@ public class HttpTaskServerTest {
         HttpResponse<String> responseGetTasks = client.send(requestGetTasks, HttpResponse.BodyHandlers.ofString());
 
         assertEquals(List.of(
-                new Task(1, "name", Status.NEW, "description")),
+                        new Task(1, "name", Status.NEW, "description")),
                 httpTaskServer.httpTaskManager.getAllTasks(),
                 "not 1 task added to server manager");
         assertEquals(200, responseGetTasks.statusCode());
@@ -200,7 +200,7 @@ public class HttpTaskServerTest {
                 .uri(urlEpic)
                 .POST(bodyPublisherEpic)
                 .build();
-        HttpResponse<String> responseEpic = SendRequestCreateRequestGetResponse(epic, urlEpic);
+        HttpResponse<String> responseEpic = sendRequestReturnResponse(epic, urlEpic);
         URI urlSubtask = URI.create(hostUrl + "subtask/");
         Subtask subtask = getStandardSutbask(CHOOSE_CREATE, 2, 1);
         HttpRequest.BodyPublisher bodyPublisherSubtask = HttpRequest.BodyPublishers.ofString(gson.toJson(subtask), DEFAULT_CHARSET);
@@ -208,7 +208,7 @@ public class HttpTaskServerTest {
                 .uri(urlSubtask)
                 .POST(bodyPublisherSubtask)
                 .build();
-        HttpResponse<String> responseSubtask = SendRequestCreateRequestGetResponse(subtask, urlSubtask);
+        HttpResponse<String> responseSubtask = sendRequestReturnResponse(subtask, urlSubtask);
         URI url = URI.create(hostUrl + "subtask/");
         HttpRequest requestGetSubtasks = HttpRequest.newBuilder()
                 .uri(url)
@@ -218,8 +218,8 @@ public class HttpTaskServerTest {
         HttpResponse<String> responseGetTasks = client.send(requestGetSubtasks, HttpResponse.BodyHandlers.ofString());
 
         assertEquals(List.of(
-                new Subtask(2, "name", Status.NEW, "description", Instant.parse("2023-05-01T00:00:00.000Z"),
-                        Duration.ofDays(31).toMinutes(), 1)),
+                        new Subtask(2, "name", Status.NEW, "description", Instant.parse("2023-05-01T00:00:00.000Z"),
+                                Duration.ofDays(31).toMinutes(), 1)),
                 httpTaskServer.httpTaskManager.getAllSubtasks(), "not 1 subtask added to server manager");
         assertEquals(200, responseGetTasks.statusCode());
     }
@@ -228,7 +228,7 @@ public class HttpTaskServerTest {
     public void getAllEpic() throws IOException, InterruptedException {
         URI urlCreate = URI.create(hostUrl + "epic/");
         Epic epic = getStandardEpic(CHOOSE_CREATE);
-        HttpResponse<String> responseCreate = SendRequestCreateRequestGetResponse(epic, urlCreate);
+        HttpResponse<String> responseCreate = sendRequestReturnResponse(epic, urlCreate);
         URI urlGet = URI.create(hostUrl + "epic/");
         HttpRequest requestGet = HttpRequest.newBuilder()
                 .uri(urlGet)
@@ -246,7 +246,7 @@ public class HttpTaskServerTest {
     public void deleteAllTask() throws IOException, InterruptedException {
         URI urlCreate = URI.create(hostUrl + "task/");
         Task task1 = getStandardTask(CHOOSE_CREATE);
-        HttpResponse<String> responseCreate = SendRequestCreateRequestGetResponse(task1, urlCreate);
+        HttpResponse<String> responseCreate = sendRequestReturnResponse(task1, urlCreate);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(gson.toJson(task1), DEFAULT_CHARSET);
         HttpRequest requestCreate = HttpRequest.newBuilder()
                 .uri(urlCreate)
@@ -268,10 +268,10 @@ public class HttpTaskServerTest {
     public void deleteAllSubtask() throws IOException, InterruptedException {
         URI urlCreateEpic = URI.create(hostUrl + "epic/");
         Epic epic = getStandardEpic(CHOOSE_CREATE);
-        HttpResponse<String> responseCreateEpic = SendRequestCreateRequestGetResponse(epic, urlCreateEpic);
+        HttpResponse<String> responseCreateEpic = sendRequestReturnResponse(epic, urlCreateEpic);
         URI urlCreateSubtask = URI.create(hostUrl + "subtask/");
         Subtask subtask = getStandardSutbask(CHOOSE_CREATE, 2, 1);
-        HttpResponse<String> responseCreateSubtask = SendRequestCreateRequestGetResponse(subtask, urlCreateSubtask);
+        HttpResponse<String> responseCreateSubtask = sendRequestReturnResponse(subtask, urlCreateSubtask);
         URI urlDeleteAllSubtasks = URI.create(hostUrl + "subtask/");
         HttpRequest requestDeleteAllSubtasks = HttpRequest.newBuilder()
                 .uri(urlDeleteAllSubtasks)
@@ -288,7 +288,7 @@ public class HttpTaskServerTest {
     public void deleteAllEpic() throws IOException, InterruptedException {
         URI urlCreateEpic = URI.create(hostUrl + "epic/");
         Epic epic = getStandardEpic(CHOOSE_CREATE);
-        HttpResponse<String> responseCreateEpic = SendRequestCreateRequestGetResponse(epic, urlCreateEpic);
+        HttpResponse<String> responseCreateEpic = sendRequestReturnResponse(epic, urlCreateEpic);
         URI url = URI.create(hostUrl + "epic/");
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
@@ -305,7 +305,7 @@ public class HttpTaskServerTest {
     public void getPrioritized() throws IOException, InterruptedException {
         URI urlCreate = URI.create(hostUrl + "task/");
         Task task1 = getStandardTask(CHOOSE_CREATE);
-        HttpResponse<String> responseCreate = SendRequestCreateRequestGetResponse(task1, urlCreate);
+        HttpResponse<String> responseCreate = sendRequestReturnResponse(task1, urlCreate);
         URI url = URI.create(hostUrl);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
@@ -323,7 +323,7 @@ public class HttpTaskServerTest {
     public void getTaskById() throws IOException, InterruptedException {
         URI urlCreateTask = URI.create(hostUrl + "task/");
         Task task1 = getStandardTask(CHOOSE_CREATE);
-        HttpResponse<String> responseCreate = SendRequestCreateRequestGetResponse(task1, urlCreateTask);
+        HttpResponse<String> responseCreate = sendRequestReturnResponse(task1, urlCreateTask);
         URI urlGetById = URI.create(hostUrl + "task/?id=1");
         HttpRequest requestGetById = HttpRequest.newBuilder()
                 .uri(urlGetById)
@@ -341,10 +341,10 @@ public class HttpTaskServerTest {
     public void getSubtaskById() throws IOException, InterruptedException {
         URI urlCreateEpic = URI.create(hostUrl + "epic/");
         Epic epic = getStandardEpic(CHOOSE_CREATE);
-        HttpResponse<String> responseCreateEpic = SendRequestCreateRequestGetResponse(epic, urlCreateEpic);
+        HttpResponse<String> responseCreateEpic = sendRequestReturnResponse(epic, urlCreateEpic);
         URI urlCreateSubtask = URI.create(hostUrl + "subtask/");
         Subtask subtask = getStandardSutbask(CHOOSE_CREATE, 2, 1);
-        HttpResponse<String> responseCreateSubtask = SendRequestCreateRequestGetResponse(subtask, urlCreateSubtask);
+        HttpResponse<String> responseCreateSubtask = sendRequestReturnResponse(subtask, urlCreateSubtask);
         URI urlGetById = URI.create(hostUrl + "subtask/?id=2");
         HttpRequest requestGetById = HttpRequest.newBuilder()
                 .uri(urlGetById)
@@ -362,7 +362,7 @@ public class HttpTaskServerTest {
     public void getEpicById() throws IOException, InterruptedException {
         URI urlCreateEpic = URI.create(hostUrl + "epic/");
         Epic epic = getStandardEpic(CHOOSE_CREATE);
-        HttpResponse<String> responseCreateEpic = SendRequestCreateRequestGetResponse(epic, urlCreateEpic);
+        HttpResponse<String> responseCreateEpic = sendRequestReturnResponse(epic, urlCreateEpic);
         URI urlGetById = URI.create(hostUrl + "epic/?id=1");
         HttpRequest requestGetById = HttpRequest.newBuilder()
                 .uri(urlGetById)
@@ -379,10 +379,10 @@ public class HttpTaskServerTest {
     public void getSubtaskListByEpicId() throws IOException, InterruptedException {
         URI urlCreateEpic = URI.create(hostUrl + "epic/");
         Epic epic = getStandardEpic(CHOOSE_CREATE);
-        HttpResponse<String> responseCreateEpic = SendRequestCreateRequestGetResponse(epic, urlCreateEpic);
+        HttpResponse<String> responseCreateEpic = sendRequestReturnResponse(epic, urlCreateEpic);
         URI urlCreateSubtask = URI.create(hostUrl + "subtask/");
         Subtask subtask = getStandardSutbask(CHOOSE_CREATE, 2, 1);
-        HttpResponse<String> responseCreateSubtask = SendRequestCreateRequestGetResponse(subtask, urlCreateSubtask);
+        HttpResponse<String> responseCreateSubtask = sendRequestReturnResponse(subtask, urlCreateSubtask);
         URI urlGetSubtaskListByEpicId = URI.create(hostUrl + "subtask/epic/?id=1");
         HttpRequest requestGetById = HttpRequest.newBuilder()
                 .uri(urlGetSubtaskListByEpicId)
@@ -400,7 +400,7 @@ public class HttpTaskServerTest {
     public void deleteTaskById() throws IOException, InterruptedException {
         URI urlCreateTask = URI.create(hostUrl + "task/");
         Task task1 = getStandardTask(CHOOSE_CREATE);
-        HttpResponse<String> responseCreate = SendRequestCreateRequestGetResponse(task1, urlCreateTask);
+        HttpResponse<String> responseCreate = sendRequestReturnResponse(task1, urlCreateTask);
         URI urlGetById = URI.create(hostUrl + "task/?id=1");
         HttpRequest requestGetById = HttpRequest.newBuilder()
                 .uri(urlGetById)
@@ -418,10 +418,10 @@ public class HttpTaskServerTest {
     public void deleteSubtaskById() throws IOException, InterruptedException {
         URI urlCreateEpic = URI.create(hostUrl + "epic/");
         Epic epic = getStandardEpic(CHOOSE_CREATE);
-        HttpResponse<String> responseCreateEpic = SendRequestCreateRequestGetResponse(epic, urlCreateEpic);
+        HttpResponse<String> responseCreateEpic = sendRequestReturnResponse(epic, urlCreateEpic);
         URI urlCreateSubtask = URI.create(hostUrl + "subtask/");
         Subtask subtask = getStandardSutbask(CHOOSE_CREATE, 2, 1);
-        HttpResponse<String> responseCreateSubtask = SendRequestCreateRequestGetResponse(subtask, urlCreateSubtask);
+        HttpResponse<String> responseCreateSubtask = sendRequestReturnResponse(subtask, urlCreateSubtask);
         URI urlDeleteSubtaskById = URI.create(hostUrl + "subtask/?id=2");
         HttpRequest requestGetById = HttpRequest.newBuilder()
                 .uri(urlDeleteSubtaskById)
@@ -440,7 +440,7 @@ public class HttpTaskServerTest {
     public void deleteEpicById() throws IOException, InterruptedException {
         URI urlCreateEpic = URI.create(hostUrl + "epic/");
         Epic epic = getStandardEpic(CHOOSE_CREATE);
-        HttpResponse<String> responseCreateEpic = SendRequestCreateRequestGetResponse(epic, urlCreateEpic);
+        HttpResponse<String> responseCreateEpic = sendRequestReturnResponse(epic, urlCreateEpic);
         URI urlGetById = URI.create(hostUrl + "epic/?id=1");
         HttpRequest requestGetById = HttpRequest.newBuilder()
                 .uri(urlGetById)
@@ -481,7 +481,7 @@ public class HttpTaskServerTest {
         }
     }
 
-    public HttpResponse<String> SendRequestCreateRequestGetResponse(Task task, URI url) throws IOException, InterruptedException {
+    public HttpResponse<String> sendRequestReturnResponse(Task task, URI url) throws IOException, InterruptedException {
         HttpRequest.BodyPublisher bodyPublisherEpic = HttpRequest.BodyPublishers.ofString(gson.toJson(task), DEFAULT_CHARSET);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)

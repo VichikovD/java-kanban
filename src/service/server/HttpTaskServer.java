@@ -75,9 +75,6 @@ public class HttpTaskServer {
                 Endpoint endpoint = getEndpoint(exchange.getRequestURI().toString(), exchange.getRequestMethod());
 
                 System.out.println(endpoint + " = " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
-                System.out.println("request URI = " + exchange.getRequestURI().toString());
-                System.out.println("request path = " + exchange.getRequestURI().getPath());
-                System.out.println("request query = " + exchange.getRequestURI().getQuery());
                 switch (endpoint) {
                     case GET_HISTORY:
                         List<Task> history = httpTaskManager.getHistory();

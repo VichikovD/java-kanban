@@ -42,8 +42,8 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
 
     @Test
     public void savingThreeTasksAndHistory() {
-        taskManager.getSubtaskById(3);
-        taskManager.getTaskById(1);
+        taskManager.getSubtaskById(madeSubtask1.getId());
+        taskManager.getTaskById(madeTask1.getId());
         String lSeparator = System.lineSeparator();
         String expectedToBeSaved = "id,type,name,status,description,epic,startTime,durationInMinutes" + lSeparator
                 + "1,TASK,name,NEW,description,null,null,0" + lSeparator
@@ -103,30 +103,27 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
         FileBackedTasksManager taskManager2 = new FileBackedTasksManager("test/TestFile.csv");
         List<Task> expectedTasksMap = List.of();
         List<Subtask> expectedSubtasksMap = List.of();
-        Epic expectedEpic = new Epic(1, "E1", Status.NEW, "Description E1",null, 0);
+        Epic expectedEpic = new Epic(1, "E1", Status.NEW, "Description E1", null, 0);
         List<Epic> expectedEpicsMap = List.of(expectedEpic);
         List<Task> expectedPrioritizedSet = List.of();
         List<Task> expectedHistoryList = List.of();
 
-        taskManager2.createEpic(new Epic(2, "E1", Status.NEW, "Description E1",null, 0));
+        taskManager2.createEpic(new Epic(2, "E1", Status.NEW, "Description E1", null, 0));
         FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("test/TestFile.csv");
 
         assertEquals(expectedTasksMap, tasksManagerLoaded.getAllTasks());
         assertEquals(expectedSubtasksMap, tasksManagerLoaded.getAllSubtasks());
         assertEquals(expectedEpicsMap, tasksManagerLoaded.getAllEpics());
         assertEquals(expectedHistoryList, tasksManagerLoaded.getHistory());
-        assertEquals(List.of(), tasksManagerLoaded.getEpicById(1).getSubtasksIdList());
+        assertEquals(expectedEpic.getSubtasksIdList(), tasksManagerLoaded.getEpicById(expectedEpic.getId()).getSubtasksIdList());
         assertEquals(expectedPrioritizedSet, tasksManagerLoaded.getPrioritizedTasks());
     }
-    /*new Task(1, "name", Status.NEW, "description");
-    new Epic(2, "Epic1 name", "Epic1 description");
-    new Subtask(3, "Subtask1 name", Status.DONE, "Subtask1 description",
-    Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2);*/
+
     @Test
     public void load3TasksWithoutHistory() {
         List<Task> expectedTasksMap = List.of(new Task(1, "name", Status.NEW, "description"));
         List<Subtask> expectedSubtasksMap = List.of(new Subtask(3, "Subtask1 name", Status.DONE, "Subtask1 description",
-                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2));
+                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), madeSubtask1.getEpicId()));
         Epic expectedEpic = new Epic(2, "Epic1 name", Status.DONE, "Epic1 description",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes());
         expectedEpic.addSubtaskId(3);
@@ -134,49 +131,47 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
         List<Epic> expectedEpicsMap = List.of(expectedEpic);
         List<Task> expectedPrioritizedSet = List.of(
                 new Subtask(3, "Subtask1 name", Status.DONE, "Subtask1 description",
-                        Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2),
+                        Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), madeSubtask1.getEpicId()),
                 new Task(1, "name", Status.NEW, "description"));
         List<Task> expectedHistoryList = List.of();
 
         FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("test/TestFile.csv");
 
-        assertTrue(expectedTasksMap.equals(tasksManagerLoaded.getAllTasks())
-                        && expectedSubtasksMap.equals(tasksManagerLoaded.getAllSubtasks())
-                        && expectedEpicsMap.equals(tasksManagerLoaded.getAllEpics())
-                        && expectedHistoryList.equals(tasksManagerLoaded.getHistory())
-                        && List.of(3).equals(tasksManagerLoaded.getEpicById(2).getSubtasksIdList())
-                        && expectedPrioritizedSet.equals(tasksManagerLoaded.getPrioritizedTasks()),
-                "Loaded not 3 Tasks with prioritized tasks list but without History tasks list");
+        assertEquals(expectedTasksMap, tasksManagerLoaded.getAllTasks());
+        assertEquals(expectedSubtasksMap, tasksManagerLoaded.getAllSubtasks());
+        assertEquals(expectedEpicsMap, tasksManagerLoaded.getAllEpics());
+        assertEquals(expectedHistoryList, tasksManagerLoaded.getHistory());
+        assertEquals(expectedEpic.getSubtasksIdList(), tasksManagerLoaded.getEpicById(expectedEpic.getId()).getSubtasksIdList());
+        assertEquals(expectedPrioritizedSet, tasksManagerLoaded.getPrioritizedTasks());
     }
 
     @Test
     public void load3TasksWithHistory() {
         List<Task> expectedTasksMap = List.of(new Task(1, "name", Status.NEW, "description"));
         List<Subtask> expectedSubtasksMap = List.of(new Subtask(3, "Subtask1 name", Status.DONE, "Subtask1 description",
-                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2));
+                Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), madeSubtask1.getEpicId()));
         Epic expectedEpic = new Epic(2, "Epic1 name", Status.DONE, "Epic1 description",
                 Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes());
-        expectedEpic.addSubtaskId(3);
+        expectedEpic.addSubtaskId(madeSubtask1.getId());
         expectedEpic.setEndTime(Instant.parse("2023-01-01T00:00:00.000Z").plus(Duration.ofDays(31)));
         List<Epic> expectedEpicsMap = List.of(expectedEpic);
         List<Task> expectedPrioritizedSet = List.of(
                 new Subtask(3, "Subtask1 name", Status.DONE, "Subtask1 description",
-                        Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2),
+                        Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), madeSubtask1.getEpicId()),
                 new Task(1, "name", Status.NEW, "description"));
         List<Task> expectedHistoryList = List.of(new Subtask(3, "Subtask1 name", Status.DONE, "Subtask1 description",
-                        Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), 2),
+                        Instant.parse("2023-01-01T00:00:00.000Z"), Duration.ofDays(31).toMinutes(), madeSubtask1.getEpicId()),
                 new Task(1, "name", Status.NEW, "description"));
         taskManager.getSubtaskById(3);
         taskManager.getTaskById(1);
 
         FileBackedTasksManager tasksManagerLoaded = FileBackedTasksManager.load("test/TestFile.csv");
 
-        assertTrue(expectedTasksMap.equals(tasksManagerLoaded.getAllTasks())
-                        && expectedSubtasksMap.equals(tasksManagerLoaded.getAllSubtasks())
-                        && expectedEpicsMap.equals(tasksManagerLoaded.getAllEpics())
-                        && expectedHistoryList.equals(tasksManagerLoaded.getHistory())
-                        && List.of(3).equals(tasksManagerLoaded.getEpicById(2).getSubtasksIdList())
-                        && expectedPrioritizedSet.equals(tasksManagerLoaded.getPrioritizedTasks()),
-                "Loaded not 3 Tasks with prioritized tasks list but without History tasks list");
+        assertEquals(expectedTasksMap, tasksManagerLoaded.getAllTasks());
+        assertEquals(expectedSubtasksMap, tasksManagerLoaded.getAllSubtasks());
+        assertEquals(expectedEpicsMap, tasksManagerLoaded.getAllEpics());
+        assertEquals(expectedHistoryList, tasksManagerLoaded.getHistory());
+        assertEquals(expectedEpic.getSubtasksIdList(), tasksManagerLoaded.getEpicById(expectedEpic.getId()).getSubtasksIdList());
+        assertEquals(expectedPrioritizedSet, tasksManagerLoaded.getPrioritizedTasks());
     }
 }

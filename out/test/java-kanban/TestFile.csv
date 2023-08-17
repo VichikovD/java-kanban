@@ -3,4 +3,4 @@ id,type,name,status,description,epic,startTime,durationInMinutes
 2,EPIC,Epic1 name,DONE,Epic1 description,null,2023-01-01T00:00:00Z,44640
 3,SUBTASK,Subtask1 name,DONE,Subtask1 description,2,2023-01-01T00:00:00Z,44640
 
-3,1
+3,1,2
