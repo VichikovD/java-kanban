@@ -2,8 +2,8 @@ package service.file;
 
 import model.*;
 import service.mem.InMemoryTaskManager;
-import service.file.exception.ManagerLoadException;
-import service.file.exception.ManagerSaveException;
+import service.file.exception.FileLoadException;
+import service.file.exception.FileSaveException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -145,7 +145,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             Files.writeString(path, stringToSave.toString());
         } catch (IOException exc) {
-            throw new ManagerSaveException("File name - " + path.getFileName().toString(), exc);
+            throw new FileSaveException("File name - " + path.getFileName().toString(), exc);
         }
     }
 
@@ -155,8 +155,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         try {
             linesFromFile = Files.readAllLines(Paths.get(path));
         } catch (IOException exc) {
-            String lSeparator = System.lineSeparator();
-            throw new ManagerLoadException("File name - " + path, exc);
+            throw new FileLoadException("File name - " + path, exc);
         }
         int emptyLineIndex = 0;
         Map<Integer, Task> allTasksMap = new HashMap<>();

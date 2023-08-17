@@ -10,11 +10,19 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 
 import com.google.gson.reflect.TypeToken;
+import service.server.exception.KVClientLoadException;
+import service.server.exception.KVClientRegisterException;
+import service.server.exception.KVClientSaveException;
 
 import java.time.Instant;
 import java.util.*;
 
 public class HttpTaskManager extends FileBackedTasksManager {
+    public static void main(String[] args) {
+        HttpTaskManager taskManager = new HttpTaskManager();
+        taskManager.load();
+    }
+
     private static final String TASKS_KEY = "tasks";
     private static final String SUBTASKS_KEY = "subtasks";
     private static final String EPICS_KEY = "epics";
@@ -22,7 +30,7 @@ public class HttpTaskManager extends FileBackedTasksManager {
     KVTaskClient kvTaskClient;
     Gson gson;
 
-    public HttpTaskManager() {
+    public HttpTaskManager() throws KVClientRegisterException {
         this.kvTaskClient = new KVTaskClient("http://localhost:8010/");
         this.gson = new GsonBuilder()
                 .serializeNulls()
@@ -30,7 +38,7 @@ public class HttpTaskManager extends FileBackedTasksManager {
                 .create();
     }
 
-    public HttpTaskManager(String url) {
+    public HttpTaskManager(String url) throws KVClientLoadException, KVClientRegisterException {
         this.kvTaskClient = new KVTaskClient(url);
         this.gson = new GsonBuilder()
                 .serializeNulls()
@@ -40,7 +48,7 @@ public class HttpTaskManager extends FileBackedTasksManager {
     }
 
     @Override
-    public void save() {
+    public void save() throws KVClientSaveException {
         List<Task> allTasks = getAllTasks();
         List<Subtask> allSubtasks = getAllSubtasks();
         List<Epic> allEpics = getAllEpics();
@@ -54,11 +62,11 @@ public class HttpTaskManager extends FileBackedTasksManager {
             kvTaskClient.put(EPICS_KEY, gson.toJson(allEpics));
             kvTaskClient.put(HISTORY_KEY, gson.toJson(historyIdList));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new KVClientSaveException(e.getMessage(), e);
         }
     }
 
-    public void load() {
+    public void load() throws KVClientLoadException {
         tasksMap.clear();
         subtasksMap.clear();
         epicsMap.clear();
@@ -120,7 +128,7 @@ public class HttpTaskManager extends FileBackedTasksManager {
             }
             setTaskCounter(maxId);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new KVClientLoadException(e.getMessage(), e);
         }
     }
 }

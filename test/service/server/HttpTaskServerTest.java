@@ -34,7 +34,6 @@ public class HttpTaskServerTest {
     Gson gson = new GsonBuilder()
             .registerTypeAdapter(Instant.class, new InstantAdapter())
             .serializeNulls()
-            .setPrettyPrinting()
             .create();
 
     public HttpTaskServerTest() throws IOException {
@@ -77,22 +76,42 @@ public class HttpTaskServerTest {
     }
 
     @Test
+    public void createWrongJsonTask() throws IOException, InterruptedException {
+        URI url = URI.create(hostUrl + "task/");
+        String taskJson = "{\"name\":\"\",\"description\":\"description\",\"id\":null,\"status\":\"NEW\"," +
+                "\"startTime\":null,\"durationInMinutes\":0,\"epicId\":null,\"tasksType\":\"TASK\"}";
+        Task task1 = gson.fromJson(taskJson, Task.class);
+
+        HttpResponse<String> response = sendRequestReturnResponse(task1, url);
+
+        assertEquals(List.of(), httpTaskServer.httpTaskManager.getAllTasks());
+        assertEquals(400, response.statusCode());
+    }
+
+    @Test
     public void UpdateTask() throws IOException, InterruptedException {
         URI url = URI.create(hostUrl + "task/");
         Task task1 = getStandardTask(CHOOSE_CREATE);
         HttpResponse<String> response1 = sendRequestReturnResponse(task1, url);
-        Task taskUpdated = new Task(1, "New name", Status.DONE, "New description");
-        HttpRequest.BodyPublisher bodyPublisherUpdate = HttpRequest.BodyPublishers.ofString(gson.toJson(taskUpdated), DEFAULT_CHARSET);
+        String taskJson = "{\"name\":\"new name\",\"new description\":\"description\",\"id\":34,\"status\":\"NEW\"," +
+                "\"startTime\":null,\"durationInMinutes\":0,\"epicId\":null,\"tasksType\":\"TASK\"}";
+        Task expectedTask = new Task(1, "name", Status.NEW, "description");
+        HttpRequest.BodyPublisher bodyPublisherUpdate = HttpRequest.BodyPublishers.ofString(taskJson, DEFAULT_CHARSET);
         HttpRequest requestUpdate = HttpRequest.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .uri(url)
                 .POST(bodyPublisherUpdate)
                 .build();
 
-        HttpResponse<String> response2 = client.send(requestUpdate, HttpResponse.BodyHandlers.ofString());
+        try {
+            HttpResponse<String> response2 = client.send(requestUpdate, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(List.of(taskUpdated), httpTaskServer.httpTaskManager.getAllTasks());
-        assertEquals(200, response1.statusCode());
-        assertEquals(200, response2.statusCode());
+            assertEquals(List.of(expectedTask), httpTaskServer.httpTaskManager.getAllTasks());
+            assertEquals(200, response1.statusCode());
+            assertEquals(404, response2.statusCode());
+        } catch (IOException e) {
+            assertEquals("HTTP/1.1 header parser received no bytes", e.getMessage());
+        }
     }
 
     @Test

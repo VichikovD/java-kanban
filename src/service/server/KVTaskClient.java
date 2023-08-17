@@ -1,5 +1,7 @@
 package service.server;
 
+import service.server.exception.KVClientRegisterException;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
@@ -19,17 +21,19 @@ public class KVTaskClient {
     String url;
     long ApiToken;
 
-    public KVTaskClient(String url) {
+    /*Если мы решили выкидывать исключеня внутри HttpTaskManager при ошибке в сохранении/загрузке на/с сервер(а),
+    то при нынешней реализации возможных URL запросов к HttpTaskServer (без возможности повторной регистрации KVClient
+    на KVServer) лучше сразу не дать создать HttpTaskManager, т.к. у него не будет токена
+    для сохранения/загрузки с KVServer, даже если тот будет в последствии запущен, а значит не будут проходить
+    запросы к HttpTaskServer по созданию/обновлению тасок. Решил при запуске HttpTaskServer явно указать ошибку в регистрации*/
+
+    public KVTaskClient(String url) throws KVClientRegisterException {
         this.client = HttpClient.newHttpClient();
         this.url = url;
-        try {
-            register();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        register();
     }
 
-    public void register() throws IOException {
+    public void register() throws KVClientRegisterException {
         URI registerURL = URI.create(url + "register");
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -44,17 +48,17 @@ public class KVTaskClient {
                 ApiToken = Long.parseLong(response.body());
                 System.out.println("received API_TOKEN: " + ApiToken + "\n");
             }
-        } catch (IOException | InterruptedException e) { // обрабатываем ошибки отправки запроса
-            throw new IOException("Error occurred during register request to KVServer, check URL and try again", e);
+        } catch (IOException | InterruptedException e) {
+            throw new KVClientRegisterException("URL - " + registerURL, e);
         }
     }
 
     public void put(String key, String json) throws IOException {
-        URI registerURL = URI.create(url + "save/" + key + "?API_TOKEN=" + ApiToken);
+        URI saveURL = URI.create(url + "save/" + key + "?API_TOKEN=" + ApiToken);
 
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(json, DEFAULT_CHARSET);
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(registerURL)
+                .uri(saveURL)
                 .POST(bodyPublisher)
                 .header("Content-Type", "application/json")
                 .build();
@@ -66,15 +70,15 @@ public class KVTaskClient {
                 System.out.println("StatusCode = 200, information saved under key: " + key + "\n");
             }
         } catch (IOException | InterruptedException e) { // обрабатываем ошибки отправки запроса
-            throw new IOException("Error occurred during save request to KVServer, check URL and try again", e);
+            throw new IOException("URL - " + saveURL, e);
         }
     }
 
     public String load(String key) throws IOException {
-        URI registerURL = URI.create(url + "load/" + key + "?API_TOKEN=" + ApiToken);
+        URI loadURL = URI.create(url + "load/" + key + "?API_TOKEN=" + ApiToken);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(registerURL)
+                .uri(loadURL)
                 .GET()
                 .header("Accept", "application/json")
                 .build();
@@ -87,7 +91,7 @@ public class KVTaskClient {
                 return response.body();
             }
         } catch (IOException | InterruptedException e) { // обрабатываем ошибки отправки запроса
-            throw new IOException("Error occurred during load request to KVServer, check URL and try again", e);
+            throw new IOException("URL - " + loadURL, e);
         }
     }
 }

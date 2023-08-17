@@ -12,6 +12,9 @@ import model.Subtask;
 import model.Task;
 import service.TaskManager;
 import service.mem.exception.NotFoundException;
+import service.server.exception.KVClientLoadException;
+import service.server.exception.KVClientRegisterException;
+import service.server.exception.KVClientSaveException;
 import service.server.exception.ValidateException;
 import util.Managers;
 
@@ -70,87 +73,94 @@ public class HttpTaskServer {
         }
 
         @Override
-        public void handle(HttpExchange exchange) throws IOException {
+        public void handle(HttpExchange exchange) {
             try {
-                Endpoint endpoint = getEndpoint(exchange.getRequestURI().toString(), exchange.getRequestMethod());
+                try {
+                    Endpoint endpoint = getEndpoint(exchange.getRequestURI().toString(), exchange.getRequestMethod());
 
-                System.out.println(endpoint + " = " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
-                switch (endpoint) {
-                    case GET_HISTORY:
-                        List<Task> history = httpTaskManager.getHistory();
-                        writeResponse(exchange, gson.toJson(history), 200);
-                        break;
-                    case CREATE_OR_UPDATE_TASK:
-                        handleCreateOrUpdateTask(exchange);
-                        break;
-                    case CREATE_OR_UPDATE_SUBTASK:
-                        handleCreateOrUpdateSubtask(exchange);
-                        break;
-                    case CREATE_OR_UPDATE_EPIC:
-                        handleCreateOrUpdateEpic(exchange);
-                        break;
-                    case GET_ALL_TASKS:
-                        List<Task> taskList = httpTaskManager.getAllTasks();
-                        writeResponse(exchange, gson.toJson(taskList), 200);
-                        break;
-                    case GET_ALL_SUBTASKS:
-                        List<Subtask> subtaskList = httpTaskManager.getAllSubtasks();
-                        writeResponse(exchange, gson.toJson(subtaskList), 200);
-                        break;
-                    case GET_ALL_EPICS:
-                        List<Epic> epicList = httpTaskManager.getAllEpics();
-                        writeResponse(exchange, gson.toJson(epicList), 200);
-                        break;
-                    case GET_TASK_BY_ID:
-                        handleGetTaskById(exchange);
-                        break;
-                    case GET_SUBTASK_BY_ID:
-                        handleGetSubtaskById(exchange);
-                        break;
-                    case GET_EPIC_BY_ID:
-                        handleGetEpicById(exchange);
-                        break;
-                    case DELETE_TASK_BY_ID:
-                        handleDeleteTaskById(exchange);
-                        break;
-                    case DELETE_SUBTASK_BY_ID:
-                        handleDeleteSubtaskById(exchange);
-                        break;
-                    case DELETE_EPIC_BY_ID:
-                        handleDeleteEpicById(exchange);
-                        break;
-                    case DELETE_ALL_TASKS:
-                        httpTaskManager.deleteAllTasks();
-                        writeResponse(exchange, "", 204);
-                        break;
-                    case DELETE_ALL_SUBTASKS:
-                        httpTaskManager.deleteAllSubtasks();
-                        writeResponse(exchange, "", 204);
-                        break;
-                    case DELETE_ALL_EPICS:
-                        httpTaskManager.deleteAllEpics();
-                        writeResponse(exchange, "", 204);
-                        break;
-                    case GET_SUBTASKS_LIST_BY_EPIC_ID:
-                        handleGetSubtasksListByEpicId(exchange);
-                        break;
-                    case GET_PRIORITIZED:
-                        List<Task> prioritizedList = httpTaskManager.getPrioritizedTasks();
-                        writeResponse(exchange, gson.toJson(prioritizedList), 200);
-                        break;
-                    default:
-                        writeResponse(exchange, "Wrong request", 404);
+                    System.out.println(endpoint + " = " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
+                    switch (endpoint) {
+                        case GET_HISTORY:
+                            List<Task> history = httpTaskManager.getHistory();
+                            writeResponse(exchange, gson.toJson(history), 200);
+                            break;
+                        case CREATE_OR_UPDATE_TASK:
+                            handleCreateOrUpdateTask(exchange);
+                            break;
+                        case CREATE_OR_UPDATE_SUBTASK:
+                            handleCreateOrUpdateSubtask(exchange);
+                            break;
+                        case CREATE_OR_UPDATE_EPIC:
+                            handleCreateOrUpdateEpic(exchange);
+                            break;
+                        case GET_ALL_TASKS:
+                            List<Task> taskList = httpTaskManager.getAllTasks();
+                            writeResponse(exchange, gson.toJson(taskList), 200);
+                            break;
+                        case GET_ALL_SUBTASKS:
+                            List<Subtask> subtaskList = httpTaskManager.getAllSubtasks();
+                            writeResponse(exchange, gson.toJson(subtaskList), 200);
+                            break;
+                        case GET_ALL_EPICS:
+                            List<Epic> epicList = httpTaskManager.getAllEpics();
+                            writeResponse(exchange, gson.toJson(epicList), 200);
+                            break;
+                        case GET_TASK_BY_ID:
+                            handleGetTaskById(exchange);
+                            break;
+                        case GET_SUBTASK_BY_ID:
+                            handleGetSubtaskById(exchange);
+                            break;
+                        case GET_EPIC_BY_ID:
+                            handleGetEpicById(exchange);
+                            break;
+                        case DELETE_TASK_BY_ID:
+                            handleDeleteTaskById(exchange);
+                            break;
+                        case DELETE_SUBTASK_BY_ID:
+                            handleDeleteSubtaskById(exchange);
+                            break;
+                        case DELETE_EPIC_BY_ID:
+                            handleDeleteEpicById(exchange);
+                            break;
+                        case DELETE_ALL_TASKS:
+                            httpTaskManager.deleteAllTasks();
+                            writeResponse(exchange, "", 204);
+                            break;
+                        case DELETE_ALL_SUBTASKS:
+                            httpTaskManager.deleteAllSubtasks();
+                            writeResponse(exchange, "", 204);
+                            break;
+                        case DELETE_ALL_EPICS:
+                            httpTaskManager.deleteAllEpics();
+                            writeResponse(exchange, "", 204);
+                            break;
+                        case GET_SUBTASKS_LIST_BY_EPIC_ID:
+                            handleGetSubtasksListByEpicId(exchange);
+                            break;
+                        case GET_PRIORITIZED:
+                            List<Task> prioritizedList = httpTaskManager.getPrioritizedTasks();
+                            writeResponse(exchange, gson.toJson(prioritizedList), 200);
+                            break;
+                        default:
+                            writeResponse(exchange, "Wrong request", 404);
+                    }
+                } catch (NotFoundException e) {
+                    writeResponse(exchange, e.getMessage(), 404);
+                } catch (ValidateException | IllegalArgumentException exc) {
+                    writeResponse(exchange, exc.getMessage(), 400);
+                } catch (KVClientSaveException e) {
+                    String msg = "Task manipulation has occurred but not saved on Server. Error on " + e.getMessage();
+                    writeResponse(exchange, msg, 400);
+                } catch (JsonSyntaxException exc) {
+                    writeResponse(exchange, "Wrong JSON format received", 400);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    exchange.close();
                 }
-            } catch (NotFoundException e) {
-                writeResponse(exchange, e.getMessage(), 404);
-            } catch (ValidateException | IllegalArgumentException exc) {
-                writeResponse(exchange, exc.getMessage(), 400);
-            } catch (JsonSyntaxException exc) {
-                writeResponse(exchange, "Wrong JSON format received", 400);
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                exchange.close();
             }
         }
 
