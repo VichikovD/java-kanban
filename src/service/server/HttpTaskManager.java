@@ -6,23 +6,23 @@ import model.Subtask;
 import model.Task;
 import service.file.FileBackedTasksManager;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 
 import com.google.gson.reflect.TypeToken;
 
-import java.net.ConnectException;
 import java.time.Instant;
 import java.util.*;
 
 public class HttpTaskManager extends FileBackedTasksManager {
-    private static final String TASKS_KEY = "1";
-    private static final String SUBTASKS_KEY = "2";
-    private static final String EPICS_KEY = "3";
-    private static final String HISTORY_KEY = "4";
+    private static final String TASKS_KEY = "tasks";
+    private static final String SUBTASKS_KEY = "subtasks";
+    private static final String EPICS_KEY = "epics";
+    private static final String HISTORY_KEY = "history";
     KVTaskClient kvTaskClient;
     Gson gson;
 
-    public HttpTaskManager() throws ConnectException {
+    public HttpTaskManager() {
         this.kvTaskClient = new KVTaskClient("http://localhost:8010/");
         this.gson = new GsonBuilder()
                 .serializeNulls()
@@ -30,13 +30,13 @@ public class HttpTaskManager extends FileBackedTasksManager {
                 .create();
     }
 
-    public HttpTaskManager(String url) throws ConnectException {
+    public HttpTaskManager(String url) {
         this.kvTaskClient = new KVTaskClient(url);
         this.gson = new GsonBuilder()
                 .serializeNulls()
                 .registerTypeAdapter(Instant.class, new InstantAdapter())
                 .create();
-        resetAndLoadFromKVServer();
+        load();
     }
 
     @Override
@@ -53,12 +53,12 @@ public class HttpTaskManager extends FileBackedTasksManager {
             kvTaskClient.put(SUBTASKS_KEY, gson.toJson(allSubtasks));
             kvTaskClient.put(EPICS_KEY, gson.toJson(allEpics));
             kvTaskClient.put(HISTORY_KEY, gson.toJson(historyIdList));
-        } catch (ConnectException e) {
-            System.out.println(Arrays.toString(e.getStackTrace()));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public void resetAndLoadFromKVServer() throws ConnectException {
+    public void load() {
         tasksMap.clear();
         subtasksMap.clear();
         epicsMap.clear();
@@ -66,38 +66,42 @@ public class HttpTaskManager extends FileBackedTasksManager {
         int maxId = 0;
         Map<Integer, Task> allTasksMap = new HashMap<>();
 
-        JsonElement jsonTasksListElement = JsonParser.parseString(kvTaskClient.load(TASKS_KEY));
-        Type tasksLististType = new TypeToken<List<Task>>() {}.getType();
-        List<Task> tasksList = gson.fromJson(jsonTasksListElement, tasksLististType);
-        for (Task task : tasksList) {
-            int taskId = task.getId();
-            if (taskId > maxId) {
-                maxId = taskId;
+        try {
+            String jsonTasksList = kvTaskClient.load(TASKS_KEY);
+            Type tasksLististType = new TypeToken<List<Task>>() {
+            }.getType();
+            List<Task> tasksList = gson.fromJson(jsonTasksList, tasksLististType);
+            for (Task task : tasksList) {
+                int taskId = task.getId();
+                if (taskId > maxId) {
+                    maxId = taskId;
+                }
+                tasksMap.put(taskId, task);
+                prioritizedTasksSet.add(task);
+                allTasksMap.put(taskId, task);
             }
-            tasksMap.put(taskId, task);
-            prioritizedTasksSet.add(task);
-            allTasksMap.put(taskId, task);
-        }
 
 
-        jsonTasksListElement = JsonParser.parseString(kvTaskClient.load(SUBTASKS_KEY));
-        Type subtasksListType = new TypeToken<List<Subtask>>() {}.getType();
-        List<Subtask> subtasksList = gson.fromJson(jsonTasksListElement, subtasksListType);
-        for (Subtask subtask : subtasksList) {
-            int subtaskId = subtask.getId();
-            if (subtaskId > maxId) {
-                maxId = subtaskId;
+            jsonTasksList = kvTaskClient.load(SUBTASKS_KEY);
+            Type subtasksListType = new TypeToken<List<Subtask>>() {
+            }.getType();
+            List<Subtask> subtasksList = gson.fromJson(jsonTasksList, subtasksListType);
+            for (Subtask subtask : subtasksList) {
+                int subtaskId = subtask.getId();
+                if (subtaskId > maxId) {
+                    maxId = subtaskId;
+                }
+                subtasksMap.put(subtaskId, subtask);
+                prioritizedTasksSet.add(subtask);
+                allTasksMap.put(subtaskId, subtask);
             }
-            subtasksMap.put(subtaskId, subtask);
-            prioritizedTasksSet.add(subtask);
-            allTasksMap.put(subtaskId, subtask);
-        }
 
 
-        jsonTasksListElement = JsonParser.parseString(kvTaskClient.load(EPICS_KEY));
-        Type EpicsListType = new TypeToken<List<Epic>>() {}.getType();
-        List<Epic> epicsList = gson.fromJson(jsonTasksListElement, EpicsListType);
-        for (Epic epic : epicsList) {
+            jsonTasksList = kvTaskClient.load(EPICS_KEY);
+            Type EpicsListType = new TypeToken<List<Epic>>() {
+            }.getType();
+            List<Epic> epicsList = gson.fromJson(jsonTasksList, EpicsListType);
+            for (Epic epic : epicsList) {
                 int epicId = epic.getId();
                 if (epicId > maxId) {
                     maxId = epicId;
@@ -107,14 +111,16 @@ public class HttpTaskManager extends FileBackedTasksManager {
             }
 
 
-        JsonArray jsonTasksIdHistoryArray = JsonParser.parseString(kvTaskClient.load(HISTORY_KEY)).getAsJsonArray();
-        if (!jsonTasksIdHistoryArray.isJsonNull()) {
-            for (JsonElement jsonTasksIdHistory : jsonTasksIdHistoryArray) {
-                int id = jsonTasksIdHistory.getAsInt();
+            String jsonTasksIdHistoryArray = kvTaskClient.load(HISTORY_KEY);
+            Type integerListType = new TypeToken<List<Integer>>() {
+            }.getType();
+            List<Integer> tasksIdHistoryList = gson.fromJson(jsonTasksIdHistoryArray, integerListType);
+            for (Integer id : tasksIdHistoryList) {
                 historyManager.add(allTasksMap.get(id));
             }
+            setTaskCounter(maxId);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        setTaskCounter(maxId);
-
     }
 }

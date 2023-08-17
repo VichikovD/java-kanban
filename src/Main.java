@@ -5,7 +5,7 @@ import model.Subtask;
 import model.Task;
 import service.TaskManager;
 import model.Status;
-import service.file.FileBackedTasksManager;
+import service.mem.exception.NotFoundException;
 import service.server.HttpTaskManager;
 import service.server.InstantAdapter;
 import service.server.KVServer;
@@ -58,14 +58,18 @@ public class Main {
         epic1.setDescription("Description E1");
         manager1.createEpic(epic1);
 
-        manager1.getTaskById(2);
+        try {
+            manager1.getTaskById(2);
+        } catch (NotFoundException e) {
+            System.out.println(e.getMessage());
+        }
 
         Subtask subTask1 = new Subtask();
         subTask1.setName("S1");
         subTask1.setId(1);
         subTask1.setDescription("Description S1");
         subTask1.setStatus(Status.DONE);
-        subTask1.setStartTime(Instant.parse("2023-01-01T00:00:00.000Z"));
+        subTask1.setStartTime(Instant.parse("2023-04-01T00:00:00.000Z"));
         subTask1.setDurationInMinutes(Duration.ofDays(31).toMinutes());
         subTask1.setEpicId(3);
         try {
@@ -77,7 +81,7 @@ public class Main {
         manager1.getSubtaskById(4);
 
         HttpTaskManager manager2 = (HttpTaskManager) Managers.getDefaults();
-        manager2.resetAndLoadFromKVServer();
+        manager2.load();
 
         System.out.println("Task maps are identical: " + manager1.getAllTasks().equals(manager2.getAllTasks()));
         System.out.println("Subtask maps are identical: " + manager1.getAllSubtasks().equals(manager2.getAllSubtasks()));
@@ -108,7 +112,7 @@ public class Main {
         subTask3.setId(1);
         subTask3.setName("S3");
         subTask3.setStatus(Status.IN_PROGRESS);
-        subTask3.setStartTime(Instant.parse("2023-05-01T00:00:00.000Z"));
+        subTask3.setStartTime(Instant.parse("2023-05-04T00:00:00.001Z"));
         subTask3.setDurationInMinutes(Duration.ofDays(31).toMinutes());
         subTask3.setEpicId(3);
         manager1.createSubtask(subTask3);
@@ -143,11 +147,14 @@ public class Main {
 
         manager1.getEpicById(3);
         manager1.getEpicById(7);
-        manager1.getTaskById(1);
+        try {
+            manager1.getTaskById(1);
+        } catch (NotFoundException e) {
+            System.out.println(e.getMessage());
+        }
         manager1.getSubtaskById(5);
         manager1.getEpicById(3);
         manager1.getEpicById(7);
-        manager1.getTaskById(2);
         manager1.getSubtaskById(4);
         manager1.getSubtaskById(6);
         manager1.getSubtaskById(5);
@@ -155,12 +162,12 @@ public class Main {
         System.out.println(manager1.getHistory());
         System.out.println("");
 
-        manager2.resetAndLoadFromKVServer();
+        manager2.load();
 
         subTask2.setEpicId(6);
         try {
             manager1.updateSubtask(subTask2);
-        } catch (IllegalArgumentException e) {
+        } catch (NotFoundException e) {
             System.out.println(e.getMessage());
         }
         System.out.println(manager2.getAllTasks());
@@ -169,7 +176,7 @@ public class Main {
         System.out.println(manager2.getPrioritizedTasks());
         System.out.println();
 
-        manager2.resetAndLoadFromKVServer();
+        manager2.load();
 
         System.out.println("Task maps are identical :" + manager1.getAllTasks().equals(manager2.getAllTasks()));
         System.out.println("Subtask maps are identical :" + manager1.getAllSubtasks().equals(manager2.getAllSubtasks()));

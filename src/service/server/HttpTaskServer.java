@@ -1,5 +1,6 @@
 package service.server;
 
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -10,21 +11,19 @@ import model.Epic;
 import model.Subtask;
 import model.Task;
 import service.TaskManager;
+import service.mem.exception.NotFoundException;
+import service.server.exception.ValidateException;
 import util.Managers;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.logging.Handler;
 
 public class HttpTaskServer {
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
@@ -67,109 +66,101 @@ public class HttpTaskServer {
                 .registerTypeAdapter(Instant.class, new InstantAdapter())
                 .create();
 
-        TasksHandler() throws ConnectException {
+        TasksHandler() {
         }
 
         @Override
-        public void handle(HttpExchange exchange) {
+        public void handle(HttpExchange exchange) throws IOException {
             try {
-                try {
-                    Endpoint endpoint = getEndpoint(exchange.getRequestURI().toString(), exchange.getRequestMethod());
+                Endpoint endpoint = getEndpoint(exchange.getRequestURI().toString(), exchange.getRequestMethod());
 
-                    System.out.println(endpoint + " = " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
-                    System.out.println("request URI = " + exchange.getRequestURI().toString());
-                    System.out.println("request path = " + exchange.getRequestURI().getPath());
-                    System.out.println("request query = " + exchange.getRequestURI().getQuery());
-                    switch (endpoint) {
-                        case GET_HISTORY:
-                            List<Task> history = httpTaskManager.getHistory();
-                            writeResponse(exchange, gson.toJson(history), 200);
-                            break;
-                        case CREATE_OR_UPDATE_TASK:
-                            handleCreateOrUpdateTask(exchange);
-                            break;
-                        case CREATE_OR_UPDATE_SUBTASK:
-                            handleCreateOrUpdateSubtask(exchange);
-                            break;
-                        case CREATE_OR_UPDATE_EPIC:
-                            handleCreateOrUpdateEpic(exchange);
-                            break;
-                        case GET_ALL_TASKS:
-                            List<Task> taskList = httpTaskManager.getAllTasks();
-                            writeResponse(exchange, gson.toJson(taskList), 200);
-                            break;
-                        case GET_ALL_SUBTASKS:
-                            List<Subtask> subtaskList = httpTaskManager.getAllSubtasks();
-                            writeResponse(exchange, gson.toJson(subtaskList), 200);
-                            break;
-                        case GET_ALL_EPICS:
-                            List<Epic> epicList = httpTaskManager.getAllEpics();
-                            writeResponse(exchange, gson.toJson(epicList), 200);
-                            break;
-                        case GET_TASK_BY_ID:
-                            handleGetTaskById(exchange);
-                            break;
-                        case GET_SUBTASK_BY_ID:
-                            handleGetSubtaskById(exchange);
-                            break;
-                        case GET_EPIC_BY_ID:
-                            handleGetEpicById(exchange);
-                            break;
-                        case DELETE_TASK_BY_ID:
-                            handleDeleteTaskById(exchange);
-                            break;
-                        case DELETE_SUBTASK_BY_ID:
-                            handleDeleteSubtaskById(exchange);
-                            break;
-                        case DELETE_EPIC_BY_ID:
-                            handleDeleteEpicById(exchange);
-                            break;
-                        case DELETE_ALL_TASKS:
-                            httpTaskManager.deleteAllTasks();
-                            writeResponse(exchange, "", 204);
-                            break;
-                        case DELETE_ALL_SUBTASKS:
-                            httpTaskManager.deleteAllSubtasks();
-                            writeResponse(exchange, "", 204);
-                            break;
-                        case DELETE_ALL_EPICS:
-                            httpTaskManager.deleteAllEpics();
-                            writeResponse(exchange, "", 204);
-                            break;
-                        case GET_SUBTASKS_LIST_BY_EPIC_ID:
-                            handleGetSubtasksListByEpicId(exchange);
-                            break;
-                        case GET_PRIORITIZED:
-                            List<Task> prioritizedList = httpTaskManager.getPrioritizedTasks();
-                            writeResponse(exchange, gson.toJson(prioritizedList), 200);
-                            break;
-                        default:
-                            writeResponse(exchange, "Wrong request", 404);
-                    }
-                } catch (IllegalArgumentException exc) {
-                    writeResponse(exchange, exc.getMessage(), 400);
-
+                System.out.println(endpoint + " = " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
+                System.out.println("request URI = " + exchange.getRequestURI().toString());
+                System.out.println("request path = " + exchange.getRequestURI().getPath());
+                System.out.println("request query = " + exchange.getRequestURI().getQuery());
+                switch (endpoint) {
+                    case GET_HISTORY:
+                        List<Task> history = httpTaskManager.getHistory();
+                        writeResponse(exchange, gson.toJson(history), 200);
+                        break;
+                    case CREATE_OR_UPDATE_TASK:
+                        handleCreateOrUpdateTask(exchange);
+                        break;
+                    case CREATE_OR_UPDATE_SUBTASK:
+                        handleCreateOrUpdateSubtask(exchange);
+                        break;
+                    case CREATE_OR_UPDATE_EPIC:
+                        handleCreateOrUpdateEpic(exchange);
+                        break;
+                    case GET_ALL_TASKS:
+                        List<Task> taskList = httpTaskManager.getAllTasks();
+                        writeResponse(exchange, gson.toJson(taskList), 200);
+                        break;
+                    case GET_ALL_SUBTASKS:
+                        List<Subtask> subtaskList = httpTaskManager.getAllSubtasks();
+                        writeResponse(exchange, gson.toJson(subtaskList), 200);
+                        break;
+                    case GET_ALL_EPICS:
+                        List<Epic> epicList = httpTaskManager.getAllEpics();
+                        writeResponse(exchange, gson.toJson(epicList), 200);
+                        break;
+                    case GET_TASK_BY_ID:
+                        handleGetTaskById(exchange);
+                        break;
+                    case GET_SUBTASK_BY_ID:
+                        handleGetSubtaskById(exchange);
+                        break;
+                    case GET_EPIC_BY_ID:
+                        handleGetEpicById(exchange);
+                        break;
+                    case DELETE_TASK_BY_ID:
+                        handleDeleteTaskById(exchange);
+                        break;
+                    case DELETE_SUBTASK_BY_ID:
+                        handleDeleteSubtaskById(exchange);
+                        break;
+                    case DELETE_EPIC_BY_ID:
+                        handleDeleteEpicById(exchange);
+                        break;
+                    case DELETE_ALL_TASKS:
+                        httpTaskManager.deleteAllTasks();
+                        writeResponse(exchange, "", 204);
+                        break;
+                    case DELETE_ALL_SUBTASKS:
+                        httpTaskManager.deleteAllSubtasks();
+                        writeResponse(exchange, "", 204);
+                        break;
+                    case DELETE_ALL_EPICS:
+                        httpTaskManager.deleteAllEpics();
+                        writeResponse(exchange, "", 204);
+                        break;
+                    case GET_SUBTASKS_LIST_BY_EPIC_ID:
+                        handleGetSubtasksListByEpicId(exchange);
+                        break;
+                    case GET_PRIORITIZED:
+                        List<Task> prioritizedList = httpTaskManager.getPrioritizedTasks();
+                        writeResponse(exchange, gson.toJson(prioritizedList), 200);
+                        break;
+                    default:
+                        writeResponse(exchange, "Wrong request", 404);
                 }
+            } catch (NotFoundException e) {
+                writeResponse(exchange, e.getMessage(), 404);
+            } catch (ValidateException | IllegalArgumentException exc) {
+                writeResponse(exchange, exc.getMessage(), 400);
+            } catch (JsonSyntaxException exc) {
+                writeResponse(exchange, "Wrong JSON format received", 400);
             } catch (IOException e) {
-                System.out.println(Arrays.toString(e.getStackTrace()));
+                e.printStackTrace();
+            } finally {
+                exchange.close();
             }
         }
 
-        public void handleCreateOrUpdateTask(HttpExchange exchange) throws IOException {
-            Task task = null;
-            try {
-                InputStream inputStream = exchange.getRequestBody();
-                String body = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
-                task = gson.fromJson(body, Task.class);
-            } catch (JsonSyntaxException exc) {
-                writeResponse(exchange, "Wrong JSON received", 400);
-                return;
-            }
-
-            if (task.getDescription().isBlank() || task.getName().isBlank() || task.getDurationInMinutes() < 0) {
-                writeResponse(exchange, "Task's fields cannot be empty", 400);
-                return;
-            }
+        public void handleCreateOrUpdateTask(HttpExchange exchange) throws ValidateException, IOException, NotFoundException {
+            String body = getRequestBody(exchange);
+            Task task = gson.fromJson(body, Task.class);
+            validate(task);
 
             String jsonAddedTask;
             if (task.getId() == null) {
@@ -184,21 +175,10 @@ public class HttpTaskServer {
 
         }
 
-        public void handleCreateOrUpdateSubtask(HttpExchange exchange) throws IOException {
-            Subtask subtask = null;
-            try (InputStream inputStream = exchange.getRequestBody()) {
-                String jsonTask = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
-                subtask = gson.fromJson(jsonTask, Subtask.class);
-            } catch (JsonSyntaxException exc) {
-                writeResponse(exchange, "Wrong JSON received", 400);
-                return;
-            }
-
-            if (subtask.getDescription().isBlank() || subtask.getName().isBlank() || subtask.getDurationInMinutes() < 0) {
-                writeResponse(exchange, "Subtask's fields cannot be empty", 400);
-                return;
-            }
-
+        public void handleCreateOrUpdateSubtask(HttpExchange exchange) throws IOException, ValidateException, NotFoundException {
+            String body = getRequestBody(exchange);
+            Subtask subtask = gson.fromJson(body, Subtask.class);
+            validate(subtask);
 
             String jsonAddedSubtask;
             if (subtask.getId() == null) {
@@ -210,23 +190,12 @@ public class HttpTaskServer {
                 jsonAddedSubtask = gson.toJson(updatedSubtask);
                 writeResponse(exchange, jsonAddedSubtask, 200);
             }
-
         }
 
-        public void handleCreateOrUpdateEpic(HttpExchange exchange) throws IOException {
-            Epic epic = null;
-            try (InputStream inputStream = exchange.getRequestBody()) {
-                String jsonEpic = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
-                epic = gson.fromJson(jsonEpic, Epic.class);
-            } catch (JsonSyntaxException exc) {
-                writeResponse(exchange, "Wrong JSON received", 400);
-                return;
-            }
-
-            if (epic.getDescription().isBlank() || epic.getName().isBlank() || epic.getDurationInMinutes() < 0) {
-                writeResponse(exchange, "Tasks's fields cannot be empty", 400);
-                return;
-            }
+        public void handleCreateOrUpdateEpic(HttpExchange exchange) throws IOException, ValidateException, NotFoundException {
+            String body = getRequestBody(exchange);
+            Epic epic = gson.fromJson(body, Epic.class);
+            validate(epic);
 
             String jsonAddedEpic;
             if (epic.getId() == null) {
@@ -238,104 +207,96 @@ public class HttpTaskServer {
                 jsonAddedEpic = gson.toJson(updatedEpic);
                 writeResponse(exchange, jsonAddedEpic, 200);
             }
-
         }
 
-        public void handleGetTaskById(HttpExchange exchange) throws IOException {
-            Optional<Integer> postIdOpt = getTaskId(exchange);
-            int taskId = postIdOpt.orElseThrow(() -> new IllegalArgumentException("Wrong id received"));
+
+        public void handleGetTaskById(HttpExchange exchange) throws IOException, NotFoundException,
+                NumberFormatException, IndexOutOfBoundsException {
+            int taskId = getTaskId(exchange);
             Task task = httpTaskManager.getTaskById(taskId);
-            if (task != null) {
-                String jsonTask = gson.toJson(task);
-                writeResponse(exchange, jsonTask, 200);
-            } else {
-                writeResponse(exchange, String.format("Task with id '%d' not found", taskId), 400);
-            }
+            String jsonTask = gson.toJson(task);
+            writeResponse(exchange, jsonTask, 200);
+
         }
 
-        public void handleGetSubtaskById(HttpExchange exchange) throws IOException {
-            Optional<Integer> postIdOpt = getTaskId(exchange);
-            int taskId = postIdOpt.orElseThrow(() -> new IllegalArgumentException("Wrong id received"));
-            Subtask subtask = httpTaskManager.getSubtaskById(taskId);
-            if (subtask != null) {
-                String jsonTask = gson.toJson(subtask);
-                writeResponse(exchange, jsonTask, 200);
-            } else {
-                writeResponse(exchange, String.format("Subtask with id '%d' not found", taskId), 400);
-            }
+        public void handleGetSubtaskById(HttpExchange exchange) throws IOException, NotFoundException,
+                NumberFormatException, IndexOutOfBoundsException {
+            int subtaskId = getTaskId(exchange);
+            Subtask subtask = httpTaskManager.getSubtaskById(subtaskId);
+            String jsonTask = gson.toJson(subtask);
+            writeResponse(exchange, jsonTask, 200);
+
         }
 
-        public void handleGetEpicById(HttpExchange exchange) throws IOException {
-            Optional<Integer> postIdOpt = getTaskId(exchange);
-            int taskId = postIdOpt.orElseThrow(() -> new IllegalArgumentException("Wrong id received"));
-            Epic epic = httpTaskManager.getEpicById(taskId);
-            if (epic != null) {
-                String jsonTask = gson.toJson(epic);
-                writeResponse(exchange, jsonTask, 200);
-            } else {
-                writeResponse(exchange, String.format("Epic with id '%d' not found", taskId), 400);
-            }
+        public void handleGetEpicById(HttpExchange exchange) throws IOException, NotFoundException,
+                NumberFormatException, IndexOutOfBoundsException {
+            int epicId = getTaskId(exchange);
+            Epic epic = httpTaskManager.getEpicById(epicId);
+            String jsonTask = gson.toJson(epic);
+            writeResponse(exchange, jsonTask, 200);
+
         }
 
-        public void handleDeleteTaskById(HttpExchange exchange) throws IOException {
-            Optional<Integer> postIdOpt = getTaskId(exchange);
-            int taskId = postIdOpt.orElseThrow(() -> new IllegalArgumentException("Wrong id received"));
-
+        public void handleDeleteTaskById(HttpExchange exchange) throws IOException, NotFoundException,
+                NumberFormatException, IndexOutOfBoundsException {
+            int taskId = getTaskId(exchange);
             httpTaskManager.deleteTaskById(taskId);
             writeResponse(exchange, "", 204);
 
         }
 
-        public void handleDeleteSubtaskById(HttpExchange exchange) throws IOException {
-            Optional<Integer> postIdOpt = getTaskId(exchange);
-            int subtaskId = postIdOpt.orElseThrow(() -> new IllegalArgumentException("Wrong id received"));
+        public void handleDeleteSubtaskById(HttpExchange exchange) throws IOException, NotFoundException,
+                NumberFormatException, IndexOutOfBoundsException {
+            int subtaskId = getTaskId(exchange);
 
             httpTaskManager.deleteSubtaskById(subtaskId);
             writeResponse(exchange, "", 204);
 
         }
 
-        public void handleDeleteEpicById(HttpExchange exchange) throws IOException {
-            Optional<Integer> postIdOpt = getTaskId(exchange);
-            int epicId = postIdOpt.orElseThrow(() -> new IllegalArgumentException("Wrong id received"));
-
+        public void handleDeleteEpicById(HttpExchange exchange) throws IOException, NotFoundException,
+                NumberFormatException, IndexOutOfBoundsException {
+            int epicId = getTaskId(exchange);
             httpTaskManager.deleteEpicById(epicId);
             writeResponse(exchange, "", 204);
 
         }
 
-        public void handleGetSubtasksListByEpicId(HttpExchange exchange) throws IOException {
-            Optional<Integer> postIdOpt = getTaskId(exchange);
-            int epicId = postIdOpt.orElseThrow(() -> new IllegalArgumentException("Wrong id received"));
-
+        public void handleGetSubtasksListByEpicId(HttpExchange exchange) throws IOException, NotFoundException,
+                NumberFormatException, IndexOutOfBoundsException {
+            int epicId = getTaskId(exchange);
             List<Subtask> subtaskList = httpTaskManager.getSubtasksListByEpicId(epicId);
             String jsonSubtaskList = gson.toJson(subtaskList);
-
             writeResponse(exchange, jsonSubtaskList, 200);
 
         }
 
-        private Optional<Integer> getTaskId(HttpExchange exchange) {
-            try {
-                String stringId = exchange.getRequestURI().getQuery().substring(3);
-                return Optional.of(Integer.parseInt(stringId));
-            } catch (NumberFormatException | IndexOutOfBoundsException exception) {
-                return Optional.empty();
-            }
+        private int getTaskId(HttpExchange exchange) throws NumberFormatException, IndexOutOfBoundsException {
+            String stringId = exchange.getRequestURI().getQuery().substring(3);
+            return Integer.parseInt(stringId);
+
         }
 
         private void writeResponse(HttpExchange exchange, String responseString, int responseCode) throws IOException {
-            try (OutputStream os = exchange.getResponseBody()) {
-                if (responseString.isEmpty()) {
-                    exchange.sendResponseHeaders(responseCode, 0);
-                } else {
-                    byte[] bytes = responseString.getBytes(DEFAULT_CHARSET);
-                    exchange.sendResponseHeaders(responseCode, bytes.length);
+            OutputStream os = exchange.getResponseBody();
+            if (responseString.isEmpty()) {
+                exchange.sendResponseHeaders(responseCode, 0);
+            } else {
+                byte[] bytes = responseString.getBytes(DEFAULT_CHARSET);
+                exchange.sendResponseHeaders(responseCode, bytes.length);
+                os.write(bytes);
+            }
 
-                    os.write(bytes);
-                }
-            } finally {
-                exchange.close();
+        }
+
+        private String getRequestBody(HttpExchange exchange) throws IOException {
+            InputStream inputStream = exchange.getRequestBody();
+            return new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
+        }
+
+        private void validate(Task task) throws ValidateException {
+            if (task.getDescription().isBlank() || task.getName().isBlank() || task.getDurationInMinutes() < 0) {
+                throw new ValidateException("Task's fields cannot be empty");
             }
         }
 

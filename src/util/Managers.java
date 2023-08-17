@@ -16,7 +16,7 @@ public class Managers {
         return historyManager;
     }
 
-    public static TaskManager getDefaults() throws ConnectException {
+    public static TaskManager getDefaults() {
         TaskManager taskManager = new HttpTaskManager();
         return taskManager;
     }
